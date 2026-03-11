@@ -41,12 +41,15 @@ public class ReportService {
     } 
 
     public ReportResponseDto actualizarReporte(Long id, ReportCreateDto report) {
+
         Report existingReport = reportRepository.findById(id).orElseThrow(() ->
          new NotFoundObjectException("Reporte no encontrado"));
-        existingReport.setIdLocation(report.getIdLocation());
-        existingReport.setObservaciones(report.getDescription());
+
+        existingReport.setDescription(report.getDescription());
         existingReport.setDate(LocalDateTime.now());
+
         Report updatedReport = reportRepository.save(existingReport);
+
         return mapToDto(updatedReport);
     }
 
@@ -84,7 +87,7 @@ public class ReportService {
         ReportResponseDto reportDto = new ReportResponseDto();
         reportDto.setIdReport(report.getIdReport());
         reportDto.setIdLocation(report.getIdLocation());
-        reportDto.setDescription(report.getObservaciones());
+        reportDto.setDescription(report.getDescription());
         reportDto.setDate(report.getDate().toString());
         reportDto.setObservaciones(report.getObservaciones());
         reportDto.setStatus(report.getStatus());

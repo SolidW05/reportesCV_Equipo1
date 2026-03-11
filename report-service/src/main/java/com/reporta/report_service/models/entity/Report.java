@@ -1,9 +1,7 @@
 package com.reporta.report_service.models.entity;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import jakarta.annotation.Generated;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

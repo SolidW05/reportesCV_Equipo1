@@ -12,8 +12,11 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,27 +31,40 @@ public class ReportController {
     private ReportService reportService;
 
     @GetMapping("/usuarios/{id}")
-    public List<ReportResponseDto> obtenerReportesPorUsuario(@PathVariable Long id) {
-        return reportService.obtenerReportesPorUsuario(id);
+    public ResponseEntity<List<ReportResponseDto>> obtenerReportesPorUsuario(@PathVariable Long id) {
+        return ResponseEntity.ok(reportService.obtenerReportesPorUsuario(id));
     }
 
     @PostMapping
-    public ReportResponseDto agregarReporte(@RequestBody ReportCreateDto report) {
-        return reportService.guardarReporte(report);
+    public ResponseEntity<ReportResponseDto> agregarReporte(@RequestBody ReportCreateDto report) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(reportService.guardarReporte(report));
     }
 
     @PutMapping("/actualizar/estatus")
     public ResponseEntity<ReportResponseDto> actualizarEstatus(
         @RequestBody ReportUpdateStatus actualizacionReporte){
-
-        ReportResponseDto respuesta = reportService.actualizarEstadoReporte(actualizacionReporte);
-        return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
-    
+        return ResponseEntity.status(HttpStatus.CREATED).body(reportService.
+            actualizarEstadoReporte(actualizacionReporte));
     }
 
     @GetMapping("/municipio/{municipio}")
     public List<ReportResponseDto> reporteEncargado(@PathVariable String municipio){
         return reportService.obtenerPorMunicipio(municipio);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarReporte(@PathVariable Long id){
+        reportService.eliminarReporte(id);
+
+        return ResponseEntity.noContent().build();
+
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ReportResponseDto> actualizarReporte(
+        @PathVariable Long id, @RequestBody ReportCreateDto actualizacionReporte){
+        return ResponseEntity.status(HttpStatus.OK).body(reportService.
+            actualizarReporte(id, actualizacionReporte));
     }
 
     
