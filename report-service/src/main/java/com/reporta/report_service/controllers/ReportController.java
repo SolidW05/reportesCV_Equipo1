@@ -8,9 +8,12 @@ import com.reporta.report_service.models.dto.ReportResponseDto;
 import com.reporta.report_service.models.dto.ReportUpdateStatus;
 import com.reporta.report_service.services.ReportService;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -65,6 +68,16 @@ public class ReportController {
         @PathVariable Long id, @RequestBody ReportCreateDto actualizacionReporte){
         return ResponseEntity.status(HttpStatus.OK).body(reportService.
             actualizarReporte(id, actualizacionReporte));
+    }
+
+    // Endpoint para obtener la imagen del reporte (Esta en pruebas)
+    @GetMapping("/images/{filename}")
+        public ResponseEntity<UrlResource> getImage(@PathVariable String filename) throws Exception {
+
+        Path path = Paths.get("uploads/images").resolve(filename);
+        UrlResource resource = new UrlResource(path.toUri());
+
+        return ResponseEntity.ok().body(resource);
     }
 
     

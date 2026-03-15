@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,11 +21,14 @@ public class ReportService {
     @Autowired
     private ReportRepository reportRepository;
 
+    @Value("${file.uploads-dir}")
+    private String uploadsDir;
+
     public ReportResponseDto guardarReporte(ReportCreateDto report) {
         Report newReport = new Report();
         newReport.setIdUser(report.getIdUser());
         newReport.setIdLocation(report.getIdLocation());
-        newReport.setObservaciones(report.getDescription());
+        newReport.setDescription(report.getDescription());
         Report savedReport = reportRepository.save(newReport);
         return mapToDto(savedReport);
     }
@@ -75,6 +79,7 @@ public class ReportService {
         List<Report> reports = reportRepository.findByIdUser(idUser);
         return reports.stream().map(this::mapToDto).toList();
     }
+
 
     public List<ReportResponseDto> obtenerPorMunicipio(String municipio) {
         // Todo: Implementar logica para obtener reportes por 

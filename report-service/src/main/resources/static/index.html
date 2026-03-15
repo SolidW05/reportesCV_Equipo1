@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Probar GET Imagen</title>
+</head>
+<body>
+
+<h2>Ver imagen desde API</h2>
+
+<input type="text" id="imageName" placeholder="nombre de la imagen (ej: test.png)">
+<button onclick="loadImage()">Cargar Imagen</button>
+
+<br><br>
+
+<img id="imagePreview" width="400">
+
+<script>
+
+function loadImage() {
+
+    const name = document.getElementById("imageName").value;
+
+    const url = "http://localhost:8083/api/report/images/" + name;
+
+    document.getElementById("imagePreview").src = url;
+
+}
+
+</script>
+
+</body>
+</html>
