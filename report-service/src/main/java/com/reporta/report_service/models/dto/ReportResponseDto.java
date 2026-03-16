@@ -13,5 +13,6 @@ public class ReportResponseDto {
     private String date;
     private String observaciones;
     private Report.Status status;
+    private String imageName;
 
 }

@@ -14,7 +14,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 
 @Entity
-@Table(name = "report-service")
+@Table(name = "report_service")
 @Data
 public class Report {
 
@@ -41,6 +41,9 @@ public class Report {
     @Enumerated(EnumType.ORDINAL)
     @Column(name = "estado", nullable = false)
     private Status status;
+
+    @Column(name = "nombre_imagen")
+    private String imageName;
 
     @PrePersist
     public void prePersist() {

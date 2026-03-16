@@ -1,28 +1,74 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Probar GET Imagen</title>
+    <title>Probar API Report</title>
 </head>
 <body>
 
 <h2>Ver imagen desde API</h2>
 
-<input type="text" id="imageName" placeholder="nombre de la imagen (ej: test.png)">
+<input type="number" id="imageName" placeholder="Id del reporte (ej: 1)">
 <button onclick="loadImage()">Cargar Imagen</button>
 
 <br><br>
 
 <img id="imagePreview" width="400">
 
+<hr>
+
+<h2>Crear reporte con imagen</h2>
+
+<label>ID Usuario</label><br>
+<input type="number" id="idUser"><br><br>
+
+<label>ID Location</label><br>
+<input type="number" id="idLocation"><br><br>
+
+<label>Description</label><br>
+<input type="text" id="description"><br><br>
+
+<label>Imagen</label><br>
+<input type="file" id="imageFile"><br><br>
+
+<button onclick="sendReport()">Enviar Reporte</button>
+
+<pre id="response"></pre>
+
 <script>
 
 function loadImage() {
 
-    const name = document.getElementById("imageName").value;
+    const id = document.getElementById("imageName").value;
 
-    const url = "http://localhost:8083/api/report/images/" + name;
+    const url = "http://localhost:8083/api/report/images/" + id;
 
     document.getElementById("imagePreview").src = url;
+
+}
+
+async function sendReport(){
+
+    const report = {
+        idUser: document.getElementById("idUser").value,
+        idLocation: document.getElementById("idLocation").value,
+        description: document.getElementById("description").value
+    };
+
+    const file = document.getElementById("imageFile").files[0];
+
+    const formData = new FormData();
+
+    formData.append(
+        "report",
+        new Blob([JSON.stringify(report)], { type: "application/json" })
+    );
+
+    formData.append("image", file);
+
+    await fetch("http://localhost:8083/api/report/image", {
+        method: "POST",
+        body: formData
+    });
 
 }
 
