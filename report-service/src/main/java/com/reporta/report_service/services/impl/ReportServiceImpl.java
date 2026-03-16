@@ -18,7 +18,7 @@ import com.reporta.report_service.services.ImageStorageService;
 import com.reporta.report_service.services.ReportService;
 
 @Service
-public class ReportServiceImpl implements ReportService{
+public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private ReportRepository reportRepository;
@@ -28,8 +28,6 @@ public class ReportServiceImpl implements ReportService{
 
     @Override
     public ReportResponseDto guardarReporte(ReportCreateDto report, MultipartFile image) {
-
-        
 
         Report newReport = new Report();
         newReport.setIdUser(report.getIdUser());
@@ -59,25 +57,36 @@ public class ReportServiceImpl implements ReportService{
     }
 
     @Override
-    public Long eliminarReporte(Long id){
-        Report oldReport = reportRepository.findById(id).orElseThrow(() ->
-         new NotFoundObjectException("Reporte no encontrado"));
+    public Long eliminarReporte(Long id) {
+        Report oldReport = reportRepository.findById(id)
+                .orElseThrow(() -> new NotFoundObjectException("Reporte no encontrado"));
 
         RestTemplate restTemplate = new RestTemplate();
         // aqui se eliminaria la ubicacion
 
         reportRepository.deleteById(id);
         return id;
-    } 
+    }
 
     @Override
-    public ReportResponseDto actualizarReporte(Long id, ReportCreateDto report) {
+    public ReportResponseDto actualizarReporte(Long id, ReportCreateDto report, MultipartFile image) {
 
-        Report existingReport = reportRepository.findById(id).orElseThrow(() ->
-         new NotFoundObjectException("Reporte no encontrado"));
+        Report existingReport = reportRepository.findById(id)
+                .orElseThrow(() -> new NotFoundObjectException("Reporte no encontrado"));
 
         existingReport.setDescription(report.getDescription());
         existingReport.setDate(LocalDateTime.now());
+
+        if (image != null) {
+            System.out.println("Archivo recibido: " + image.getOriginalFilename());
+            String imageName = imageStorageService.guardarImagen(image);
+
+            if (existingReport.getImageName() != null) {
+                imageStorageService.eliminarImagen(existingReport.getImageName());
+            }
+
+            existingReport.setImageName(imageName);
+        }
 
         Report updatedReport = reportRepository.save(existingReport);
 
@@ -86,18 +95,18 @@ public class ReportServiceImpl implements ReportService{
 
     @Override
     public ReportResponseDto obtenerReportePorId(Long id) {
-        Report report = reportRepository.findById(id).orElseThrow(() ->
-         new NotFoundObjectException("Reporte no encontrado"));
+        Report report = reportRepository.findById(id)
+                .orElseThrow(() -> new NotFoundObjectException("Reporte no encontrado"));
         return mapToDto(report);
     }
 
     @Override
     public ReportResponseDto actualizarEstadoReporte(
-        ReportUpdateStatus reportUpdateStatus) {
+            ReportUpdateStatus reportUpdateStatus) {
         Report existingReport = reportRepository.findById(
-            reportUpdateStatus.getIdReport()).orElseThrow(() ->
-         new NotFoundObjectException("Reporte no encontrado"));
-        
+                reportUpdateStatus.getIdReport())
+                .orElseThrow(() -> new NotFoundObjectException("Reporte no encontrado"));
+
         existingReport.setStatus(reportUpdateStatus.getStatus());
         existingReport.setObservaciones(reportUpdateStatus.getObservaciones());
         Report updatedReport = reportRepository.save(existingReport);
@@ -112,11 +121,10 @@ public class ReportServiceImpl implements ReportService{
 
     @Override
     public List<ReportResponseDto> obtenerPorMunicipio(String municipio) {
-        // Todo: Implementar logica para obtener reportes por 
+        // Todo: Implementar logica para obtener reportes por
         // municipio utilizando restTemplate
         return null;
     }
-
 
     private ReportResponseDto mapToDto(Report report) {
         ReportResponseDto reportDto = new ReportResponseDto();

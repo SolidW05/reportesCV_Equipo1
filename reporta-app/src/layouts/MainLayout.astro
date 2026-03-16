@@ -1,0 +1,172 @@
+---
+export interface Props {
+  title?: string;
+  description?: string;
+}
+const { title = 'ReporTA', description = 'Sistema de reportes ciudadanos' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title} — ReporTA</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/src/styles/global.css" />
+  </head>
+  <body>
+
+    <!-- ── Navigation ── -->
+    <header class="navbar">
+      <div class="navbar-inner container">
+        <a href="/" class="logo">
+          <span class="logo-mark">▣</span>
+          <span class="logo-text">ReporTA</span>
+        </a>
+
+        <nav class="nav-links" id="nav-menu">
+          <a href="/" class="nav-link">Inicio</a>
+          <a href="/reports" class="nav-link">Mis Reportes</a>
+          <a href="/reports/create" class="nav-link nav-cta">+ Nuevo Reporte</a>
+          <a href="/admin/reports" class="nav-link nav-admin">Admin</a>
+        </nav>
+
+        <button class="hamburger" id="hamburger" aria-label="Menú" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ── Main Content ── -->
+    <main>
+      <slot />
+    </main>
+
+    <!-- ── Footer ── -->
+    <footer class="footer">
+      <div class="container footer-inner">
+        <span class="mono" style="color: var(--text-muted); font-size:0.8rem;">
+          © 2026 ReporTA — Centro Universitario de Tonalá
+        </span>
+        <span class="mono" style="color: var(--border); font-size:0.8rem;">API v1 · localhost:8083</span>
+      </div>
+    </footer>
+
+    <!-- ── Toast Container ── -->
+    <div id="toast-container" aria-live="polite"></div>
+
+    <script>
+      // Hamburger toggle
+      const hamburger = document.getElementById('hamburger');
+      const navMenu   = document.getElementById('nav-menu');
+      hamburger?.addEventListener('click', () => {
+        const expanded = hamburger.getAttribute('aria-expanded') === 'true';
+        hamburger.setAttribute('aria-expanded', String(!expanded));
+        navMenu?.classList.toggle('open');
+        hamburger.classList.toggle('active');
+      });
+
+      // Active nav link highlight
+      const links = document.querySelectorAll<HTMLAnchorElement>('.nav-link');
+      const path  = window.location.pathname;
+      links.forEach(link => {
+        if (link.getAttribute('href') === path ||
+            (path.startsWith('/reports') && link.getAttribute('href') === '/reports' && path !== '/reports/create') ||
+            (path.startsWith('/admin')   && link.getAttribute('href') === '/admin/reports')) {
+          link.classList.add('active');
+        }
+      });
+    </script>
+
+  </body>
+</html>
+
+<style>
+/* ── Navbar ── */
+.navbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(13, 14, 17, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.navbar-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px;
+}
+.logo {
+  display: flex; align-items: center; gap: 0.5rem;
+  text-decoration: none;
+}
+.logo-mark {
+  font-size: 1.4rem; color: var(--accent); line-height: 1;
+}
+.logo-text {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: 1.25rem; color: var(--text); letter-spacing: -0.04em;
+}
+.nav-links {
+  display: flex; align-items: center; gap: 0.25rem;
+}
+.nav-link {
+  font-family: var(--font-display); font-weight: 600; font-size: 0.875rem;
+  color: var(--text-dim); padding: 0.45rem 0.85rem; border-radius: var(--radius);
+  transition: color var(--transition), background var(--transition);
+  letter-spacing: 0.01em;
+}
+.nav-link:hover { color: var(--text); background: var(--surface-2); }
+.nav-link.active { color: var(--accent); }
+.nav-cta {
+  background: var(--accent); color: var(--bg) !important;
+  font-weight: 700; padding: 0.45rem 1rem; margin-left: 0.5rem;
+  transition: background var(--transition), transform var(--transition);
+}
+.nav-cta:hover { background: var(--accent-hover); transform: translateY(-1px); }
+.nav-admin {
+  color: var(--text-muted) !important; font-size: 0.8rem;
+  border: 1px solid var(--border); margin-left: 0.25rem;
+}
+.nav-admin:hover { border-color: var(--accent); color: var(--accent) !important; }
+
+/* Hamburger */
+.hamburger {
+  display: none; flex-direction: column; gap: 5px;
+  background: none; border: none; cursor: pointer; padding: 0.5rem;
+}
+.hamburger span {
+  display: block; width: 22px; height: 2px;
+  background: var(--text); border-radius: 2px;
+  transition: transform var(--transition), opacity var(--transition);
+}
+.hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.active span:nth-child(2) { opacity: 0; }
+.hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+@media (max-width: 768px) {
+  .hamburger { display: flex; }
+  .nav-links {
+    display: none; flex-direction: column; align-items: flex-start;
+    position: absolute; top: 64px; left: 0; right: 0;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 1rem 1.5rem; gap: 0.5rem;
+  }
+  .nav-links.open { display: flex; }
+  .nav-cta { margin-left: 0; width: 100%; text-align: center; }
+}
+
+/* ── Footer ── */
+.footer {
+  border-top: 1px solid var(--border); padding: 1.5rem 0; margin-top: auto;
+}
+.footer-inner {
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+/* ── Toast Container ── */
+#toast-container {
+  position: fixed; bottom: 1.5rem; right: 1.5rem;
+  display: flex; flex-direction: column; gap: 0.75rem;
+  z-index: 9000; pointer-events: none;
+}
+</style>

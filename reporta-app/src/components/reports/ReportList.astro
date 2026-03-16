@@ -1,0 +1,51 @@
+---
+import ReportCard from './ReportCard.astro';
+import type { ReportResponseDto } from '../../types/report';
+
+export interface Props {
+  reports: ReportResponseDto[];
+  showActions?: boolean;
+  emptyText?: string;
+}
+const {
+  reports,
+  showActions = false,
+  emptyText = 'No hay reportes disponibles.',
+} = Astro.props;
+---
+
+{reports.length === 0 ? (
+  <div class="empty-state">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.3">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <p>{emptyText}</p>
+    <a href="/reports/create" class="empty-cta">Crear primer reporte →</a>
+  </div>
+) : (
+  <div class="report-grid stagger">
+    {reports.map((r) => (
+      <ReportCard report={r} showActions={showActions} />
+    ))}
+  </div>
+)}
+
+<style>
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
+}
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0.75rem; padding: 4rem 2rem; text-align: center;
+  color: var(--text-muted); font-size: 0.9rem;
+  background: var(--surface); border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+}
+.empty-cta {
+  font-weight: 700; color: var(--accent); font-size: 0.875rem;
+  margin-top: 0.25rem; text-decoration: none;
+}
+.empty-cta:hover { color: var(--accent-hover); }
+</style>

@@ -1,0 +1,28 @@
+---
+import { STATUS_LABELS, STATUS_COLORS } from '../../types/report';
+export interface Props {
+  status: string;
+  class?: string;
+}
+const { status, class: className = '' } = Astro.props;
+const label = STATUS_LABELS[status] ?? status;
+const colorClass = STATUS_COLORS[status] ?? 'status-pending';
+---
+
+<span class={`badge mono ${colorClass} ${className}`} role="status">
+  <span class="badge-dot" aria-hidden="true"></span>
+  {label}
+</span>
+
+<style>
+.badge {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.25rem 0.65rem; border-radius: 99px;
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; white-space: nowrap;
+}
+.badge-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor; flex-shrink: 0;
+}
+</style>

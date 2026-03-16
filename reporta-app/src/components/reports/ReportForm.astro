@@ -1,0 +1,204 @@
+---
+// ReportForm.astro — Create a new report with optional image
+---
+
+<form id="reportForm" class="report-form" novalidate>
+  <div class="form-grid">
+    <div class="field">
+      <label for="idUser" class="field-label">ID Usuario <span class="req">*</span></label>
+      <input id="idUser" name="idUser" type="number" min="1" required
+             placeholder="Ej: 1" class="field-input" />
+    </div>
+    <div class="field">
+      <label for="idLocation" class="field-label">ID Ubicación <span class="req">*</span></label>
+      <input id="idLocation" name="idLocation" type="number" min="1" required
+             placeholder="Ej: 5" class="field-input" />
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="description" class="field-label">Descripción <span class="req">*</span></label>
+    <textarea id="description" name="description" required rows="4"
+              placeholder="Describe el problema detalladamente..."
+              class="field-input field-textarea"></textarea>
+  </div>
+
+  <div class="field">
+    <label for="image" class="field-label">Imagen (opcional)</label>
+    <div class="file-drop" id="fileDrop">
+      <input id="image" name="image" type="file"
+             accept="image/*" class="file-input" />
+      <div class="file-drop-inner">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <p class="file-text">Arrastra una imagen o <span>haz clic</span></p>
+        <p class="file-hint mono" id="fileName">PNG, JPG, WEBP — máx. 10 MB</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" id="submitBtn" class="btn-submit">
+      <span id="submitLabel">Crear Reporte</span>
+      <span id="submitSpinner" class="spinner" style="display:none" aria-hidden="true"></span>
+    </button>
+  </div>
+
+  <div id="formFeedback" role="alert" aria-live="polite"></div>
+</form>
+
+<style>
+.report-form { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.form-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;
+}
+@media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+
+.field { display: flex; flex-direction: column; gap: 0.4rem; }
+.field-label {
+  font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.07em;
+}
+.req { color: var(--accent); }
+.field-input {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  font-family: var(--font-display); font-size: 0.9375rem;
+  padding: 0.65rem 0.875rem; width: 100%; outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.field-input:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+}
+.field-textarea { resize: vertical; min-height: 100px; }
+
+/* File Drop */
+.file-drop {
+  position: relative; border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--transition), background var(--transition);
+  overflow: hidden;
+}
+.file-drop:hover, .file-drop.drag-over {
+  border-color: var(--accent); background: var(--accent-dim);
+}
+.file-input {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
+}
+.file-drop-inner {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 0.5rem; padding: 2rem 1rem; pointer-events: none;
+}
+.file-text {
+  font-size: 0.9rem; color: var(--text-dim);
+}
+.file-text span { color: var(--accent); font-weight: 700; }
+.file-hint { font-size: 0.72rem; color: var(--text-muted); }
+
+/* Submit */
+.form-actions { display: flex; justify-content: flex-end; }
+.btn-submit {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  background: var(--accent); color: var(--bg);
+  font-family: var(--font-display); font-weight: 800; font-size: 1rem;
+  padding: 0.75rem 2rem; border: none; border-radius: var(--radius);
+  cursor: pointer; transition: background var(--transition), transform var(--transition),
+                               box-shadow var(--transition);
+  letter-spacing: 0.02em;
+}
+.btn-submit:hover {
+  background: var(--accent-hover); transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(245,158,11,0.3);
+}
+.btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.spinner {
+  width: 16px; height: 16px; border: 2px solid var(--bg);
+  border-top-color: transparent; border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+/* Feedback */
+#formFeedback { min-height: 1.5rem; font-size: 0.875rem; }
+#formFeedback.success { color: var(--success); }
+#formFeedback.error   { color: var(--danger); }
+</style>
+
+<script>
+import { buildReportFormData } from '../../utils/formDataHelper';
+
+const form = document.getElementById('reportForm') as HTMLFormElement;
+const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+const submitLabel = document.getElementById('submitLabel')!;
+const submitSpinner = document.getElementById('submitSpinner')!;
+const feedback = document.getElementById('formFeedback')!;
+const fileInput = document.getElementById('image') as HTMLInputElement;
+const fileNameEl = document.getElementById('fileName')!;
+const fileDrop = document.getElementById('fileDrop')!;
+
+// Show selected file name
+fileInput.addEventListener('change', () => {
+  if (fileInput.files?.[0]) {
+    fileNameEl.textContent = fileInput.files[0].name;
+    fileDrop.style.borderColor = 'var(--accent)';
+  }
+});
+
+// Drag-over effect
+fileDrop.addEventListener('dragover', (e) => {
+  e.preventDefault(); fileDrop.classList.add('drag-over');
+});
+fileDrop.addEventListener('dragleave', () => fileDrop.classList.remove('drag-over'));
+fileDrop.addEventListener('drop', () => fileDrop.classList.remove('drag-over'));
+
+// Submit handler
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  feedback.textContent = '';
+  feedback.className = '';
+
+  const data = new FormData(form);
+  const idUser = Number(data.get('idUser'));
+  const idLocation = Number(data.get('idLocation'));
+  const description = String(data.get('description') ?? '').trim();
+  const imageFile = fileInput.files?.[0] ?? null;
+
+  if (!idUser || !idLocation || !description) {
+    feedback.textContent = 'Por favor completa todos los campos requeridos.';
+    feedback.className = 'error';
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitLabel.textContent = 'Enviando...';
+  submitSpinner.style.display = 'inline-block';
+
+  try {
+    const fd = buildReportFormData({ idUser, idLocation, description }, imageFile);
+    const res = await fetch('/api/report', { method: 'POST', body: fd });
+    if (!res.ok) throw new Error(`Error ${res.status}`);
+
+    feedback.textContent = '✓ Reporte creado exitosamente.';
+    feedback.className = 'success';
+    form.reset();
+    fileNameEl.textContent = 'PNG, JPG, WEBP — máx. 10 MB';
+    fileDrop.style.borderColor = '';
+
+    // Show toast if available
+    if ((window as any).showToast) (window as any).showToast('Reporte creado', 'success');
+
+    // Redirect after delay
+    setTimeout(() => { window.location.href = '/reports'; }, 1500);
+  } catch (err) {
+    feedback.textContent = `✗ ${(err as Error).message ?? 'Error al crear el reporte.'}`;
+    feedback.className = 'error';
+    if ((window as any).showToast) (window as any).showToast('Error al crear reporte', 'error');
+  } finally {
+    submitBtn.disabled = false;
+    submitLabel.textContent = 'Crear Reporte';
+    submitSpinner.style.display = 'none';
+  }
+});
+</script>

@@ -1,0 +1,181 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import StatusBadge from '../../components/ui/StatusBadge.astro';
+import ReportImage from '../../components/reports/ReportImage.astro';
+import type { ReportResponseDto } from '../../types/report';
+
+const { id } = Astro.params;
+
+let report: ReportResponseDto | null = null;
+let error: string | null = null;
+
+try {
+  const res = await fetch(`http://localhost:8083/api/report/${id}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  report = await res.json();
+} catch (e) {
+  error = (e as Error).message;
+}
+
+const dateFormatted = report
+  ? new Date(report.date).toLocaleDateString('es-MX', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    })
+  : null;
+---
+
+<MainLayout title={report ? `Reporte #${report.idReport}` : 'Reporte'}>
+  <div class="container section">
+
+    <div class="page-breadcrumb">
+      <a href="/reports">← Mis Reportes</a>
+    </div>
+
+    {error && (
+      <div class="alert-error">
+        <strong>Reporte no encontrado:</strong> {error}
+      </div>
+    )}
+
+    {report && (
+      <div class="detail-wrap">
+        <!-- Header -->
+        <div class="detail-header animate-fade-up">
+          <div class="detail-meta-top">
+            <span class="detail-id mono">#{report.idReport}</span>
+            <StatusBadge status={report.status} />
+          </div>
+          <h1 class="detail-title">{report.description}</h1>
+          <div class="detail-meta-row">
+            <span class="meta-item mono">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              {dateFormatted}
+            </span>
+            <span class="meta-item mono">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              Ubicación #{report.idLocation}
+            </span>
+          </div>
+        </div>
+
+        <div class="detail-body">
+          <!-- Image -->
+          <div class="detail-image-col animate-fade-up" style="animation-delay:80ms">
+            <ReportImage reportId={report.idReport} />
+          </div>
+
+          <!-- Info -->
+          <div class="detail-info-col animate-fade-up" style="animation-delay:160ms">
+
+            <!-- Current Status Card -->
+            <div class="info-card">
+              <div class="info-card-label mono">Estado actual</div>
+              <div class="status-row">
+                <StatusBadge status={report.status} />
+              </div>
+            </div>
+
+            <!-- Observations -->
+            {report.observaciones && (
+              <div class="info-card obs-card">
+                <div class="info-card-label mono">Observaciones del administrador</div>
+                <blockquote class="obs-text">{report.observaciones}</blockquote>
+              </div>
+            )}
+
+            <!-- Raw Data -->
+            <div class="info-card info-data">
+              <div class="info-card-label mono">Datos del reporte</div>
+              <dl class="data-list">
+                <div class="data-row">
+                  <dt>ID Reporte</dt>
+                  <dd class="mono">#{report.idReport}</dd>
+                </div>
+                <div class="data-row">
+                  <dt>ID Ubicación</dt>
+                  <dd class="mono">#{report.idLocation}</dd>
+                </div>
+                <div class="data-row">
+                  <dt>Fecha</dt>
+                  <dd class="mono">{report.date}</dd>
+                </div>
+                {report.imageName && (
+                  <div class="data-row">
+                    <dt>Imagen</dt>
+                    <dd class="mono">{report.imageName}</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+
+            <a href="/reports" class="btn-back">← Volver a Mis Reportes</a>
+          </div>
+        </div>
+      </div>
+    )}
+
+  </div>
+</MainLayout>
+
+<style>
+.page-breadcrumb { margin-bottom: 1.5rem; font-size: 0.85rem; }
+.page-breadcrumb a { color: var(--text-muted); }
+.page-breadcrumb a:hover { color: var(--accent); }
+
+.alert-error {
+  background: var(--danger-dim); border: 1px solid rgba(239,68,68,0.3);
+  border-radius: var(--radius-lg); padding: 1rem 1.25rem; color: var(--danger);
+}
+
+.detail-wrap { display: flex; flex-direction: column; gap: 2rem; }
+.detail-header { display: flex; flex-direction: column; gap: 0.75rem; }
+.detail-meta-top { display: flex; align-items: center; gap: 1rem; }
+.detail-id { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.1em; }
+.detail-title {
+  font-size: clamp(1.6rem, 4vw, 2.75rem); line-height: 1.15;
+  max-width: 800px;
+}
+.detail-meta-row { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.meta-item {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  font-size: 0.8rem; color: var(--text-muted);
+}
+
+.detail-body {
+  display: grid; grid-template-columns: 1fr 380px; gap: 2.5rem; align-items: start;
+}
+@media (max-width: 900px) {
+  .detail-body { grid-template-columns: 1fr; }
+}
+
+.info-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+.info-card-label {
+  font-size: 0.68rem; color: var(--text-muted); letter-spacing: 0.1em;
+  text-transform: uppercase; margin-bottom: 0.6rem;
+}
+
+.obs-card { border-left: 3px solid var(--accent); }
+.obs-text {
+  margin: 0; color: var(--text-dim); font-style: italic;
+  font-size: 0.9rem; line-height: 1.7;
+}
+
+.data-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.data-row { display: flex; justify-content: space-between; align-items: center; }
+.data-row dt { font-size: 0.8rem; color: var(--text-muted); }
+.data-row dd { font-size: 0.8rem; color: var(--text-dim); margin: 0; }
+
+.btn-back {
+  display: inline-flex; align-items: center;
+  font-size: 0.85rem; font-weight: 600; color: var(--text-muted);
+  text-decoration: none; transition: color var(--transition);
+  margin-top: 0.5rem;
+}
+.btn-back:hover { color: var(--accent); }
+
+.status-row { display: flex; align-items: center; gap: 0.75rem; }
+</style>

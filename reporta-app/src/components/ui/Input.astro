@@ -1,0 +1,78 @@
+---
+export interface Props {
+  label?: string;
+  name?: string;
+  id?: string;
+  type?: string;
+  placeholder?: string;
+  value?: string | number;
+  required?: boolean;
+  disabled?: boolean;
+  error?: string;
+  hint?: string;
+  class?: string;
+}
+const {
+  label, name, id, type = 'text', placeholder,
+  value, required, disabled, error, hint, class: className = '',
+} = Astro.props;
+const inputId = id ?? name;
+---
+
+<div class={`field ${error ? 'field-error' : ''} ${className}`}>
+  {label && (
+    <label for={inputId} class="field-label">
+      {label}
+      {required && <span class="field-required" aria-hidden="true"> *</span>}
+    </label>
+  )}
+  <input
+    id={inputId}
+    name={name}
+    type={type}
+    placeholder={placeholder}
+    value={value}
+    required={required}
+    disabled={disabled}
+    class="field-input"
+    aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
+    aria-invalid={error ? 'true' : undefined}
+  />
+  {hint && !error && <p id={`${inputId}-hint`} class="field-hint">{hint}</p>}
+  {error && <p id={`${inputId}-error`} class="field-error-msg" role="alert">{error}</p>}
+</div>
+
+<style>
+.field { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.field-label {
+  font-size: 0.8rem; font-weight: 600; color: var(--text-dim);
+  font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase;
+}
+.field-required { color: var(--accent); }
+
+.field-input {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  font-family: var(--font-display); font-size: 0.9375rem;
+  padding: 0.65rem 0.875rem; width: 100%;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+}
+.field-input::placeholder { color: var(--text-muted); }
+.field-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+}
+.field-input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.field-error .field-input {
+  border-color: var(--danger);
+}
+.field-error .field-input:focus {
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.15);
+}
+
+.field-hint { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.1rem; }
+.field-error-msg { font-size: 0.8rem; color: var(--danger); margin-top: 0.1rem; }
+</style>

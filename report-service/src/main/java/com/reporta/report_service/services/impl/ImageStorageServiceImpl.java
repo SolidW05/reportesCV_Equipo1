@@ -9,6 +9,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +19,7 @@ import com.reporta.report_service.exceptions.NotValidResourceException;
 import com.reporta.report_service.services.ImageStorageService;
 
 @Service
+@Primary
 public class ImageStorageServiceImpl implements ImageStorageService {
 
     @Value("${file.uploads-dir}")
@@ -33,7 +35,7 @@ public class ImageStorageServiceImpl implements ImageStorageService {
         if (!image.getContentType().startsWith("image/")) {
             throw new NotValidResourceException("El archivo no es una imagen válida");
         }
-        
+
         try {
 
             String nombreArchivo = generarNombre(image.getOriginalFilename());
@@ -97,13 +99,11 @@ public class ImageStorageServiceImpl implements ImageStorageService {
         }
     }
 
-
     private String generarNombre(String imageName) {
 
         String uuid = UUID.randomUUID().toString();
 
         return uuid + "_" + imageName.replace(" ", "_");
     }
-
 
 }

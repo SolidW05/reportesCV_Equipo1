@@ -1,78 +1,120 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Probar API Report</title>
 </head>
+
 <body>
 
-<h2>Ver imagen desde API</h2>
+    <h2>Ver imagen desde API</h2>
 
-<input type="number" id="imageName" placeholder="Id del reporte (ej: 1)">
-<button onclick="loadImage()">Cargar Imagen</button>
+    <input type="number" id="imageName" placeholder="Id del reporte (ej: 1)">
+    <button onclick="loadImage()">Cargar Imagen</button>
 
-<br><br>
+    <br><br>
 
-<img id="imagePreview" width="400">
+    <img id="imagePreview" width="400">
 
-<hr>
+    <hr>
 
-<h2>Crear reporte con imagen</h2>
+    <h2>Crear reporte con imagen</h2>
 
-<label>ID Usuario</label><br>
-<input type="number" id="idUser"><br><br>
+    <label>ID Usuario</label><br>
+    <input type="number" id="idUser"><br><br>
 
-<label>ID Location</label><br>
-<input type="number" id="idLocation"><br><br>
+    <label>ID Location</label><br>
+    <input type="number" id="idLocation"><br><br>
 
-<label>Description</label><br>
-<input type="text" id="description"><br><br>
+    <label>Description</label><br>
+    <input type="text" id="description"><br><br>
 
-<label>Imagen</label><br>
-<input type="file" id="imageFile"><br><br>
+    <label>Imagen</label><br>
+    <input type="file" id="imageFile"><br><br>
 
-<button onclick="sendReport()">Enviar Reporte</button>
+    <button onclick="sendReport()">Enviar Reporte</button>
 
-<pre id="response"></pre>
+    <pre id="response"></pre>
 
-<script>
+    <hr>
 
-function loadImage() {
+    <h2>Actualizar reporte</h2>
 
-    const id = document.getElementById("imageName").value;
+    <label>ID Reporte</label><br>
+    <input type="number" id="idReportUpdate"><br><br>
 
-    const url = "http://localhost:8083/api/report/images/" + id;
+    <label>Description</label><br>
+    <input type="text" id="descriptionUpdate"><br><br>
 
-    document.getElementById("imagePreview").src = url;
+    <label>Imagen</label><br>
+    <input type="file" id="imageFileUpdate"><br><br>
 
-}
+    <button onclick="updateReport()">Actualizar Reporte</button>
 
-async function sendReport(){
+    <pre id="responseUpdate"></pre>
 
-    const report = {
-        idUser: document.getElementById("idUser").value,
-        idLocation: document.getElementById("idLocation").value,
-        description: document.getElementById("description").value
-    };
+    <script>
 
-    const file = document.getElementById("imageFile").files[0];
+        function loadImage() {
 
-    const formData = new FormData();
+            const id = document.getElementById("imageName").value;
 
-    formData.append(
-        "report",
-        new Blob([JSON.stringify(report)], { type: "application/json" })
-    );
+            const url = "http://localhost:8083/api/report/images/" + id;
 
-    formData.append("image", file);
+            document.getElementById("imagePreview").src = url;
 
-    await fetch("http://localhost:8083/api/report/image", {
-        method: "POST",
-        body: formData
-    });
+        }
 
-}
+        async function updateReport() {
 
-</script>
+            const id = document.getElementById("idReportUpdate").value;
+            const description = document.getElementById("descriptionUpdate").value;
+            const file = document.getElementById("imageFileUpdate").files[0];
+
+            const formData = new FormData();
+
+            formData.append(
+                "report",
+                new Blob([JSON.stringify({ description })], { type: "application/json" })
+            );
+
+            formData.append("image", file);
+
+            await fetch("http://localhost:8083/api/report/" + id, {
+                method: "PUT",
+                body: formData
+            });
+
+        }
+
+        async function sendReport() {
+
+            const report = {
+                idUser: document.getElementById("idUser").value,
+                idLocation: document.getElementById("idLocation").value,
+                description: document.getElementById("description").value
+            };
+
+            const file = document.getElementById("imageFile").files[0];
+
+            const formData = new FormData();
+
+            formData.append(
+                "report",
+                new Blob([JSON.stringify(report)], { type: "application/json" })
+            );
+
+            formData.append("image", file);
+
+            await fetch("http://localhost:8083/api/report", {
+                method: "POST",
+                body: formData
+            });
+
+        }
+
+    </script>
 
 </body>
+
 </html>

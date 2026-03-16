@@ -1,0 +1,105 @@
+---
+import MainLayout from './MainLayout.astro';
+export interface Props {
+  title?: string;
+  section?: string;
+}
+const { title, section = 'Panel Admin' } = Astro.props;
+---
+
+<MainLayout title={title ?? section}>
+  <div class="dash-wrap">
+    <!-- Sidebar -->
+    <aside class="dash-sidebar">
+      <div class="sidebar-label mono">Admin Panel</div>
+      <nav class="sidebar-nav">
+        <a href="/admin/reports" class="sidebar-link" id="sl-reports">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Todos los Reportes
+        </a>
+        <a href="/reports" class="sidebar-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Vista Usuario
+        </a>
+        <a href="/reports/create" class="sidebar-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Crear Reporte
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Content -->
+    <div class="dash-content">
+      <div class="dash-header">
+        <h2 class="dash-title">{section}</h2>
+        <span class="mono dash-badge">ADMIN</span>
+      </div>
+      <slot />
+    </div>
+  </div>
+</MainLayout>
+
+<style>
+.dash-wrap {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: calc(100vh - 64px - 73px);
+}
+
+.dash-sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 2rem 1rem;
+  position: sticky; top: 64px;
+  height: calc(100vh - 64px);
+  overflow-y: auto;
+}
+.sidebar-label {
+  font-size: 0.7rem; font-weight: 600;
+  color: var(--text-muted); letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 0 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; }
+.sidebar-link {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.6rem 0.75rem; border-radius: var(--radius);
+  font-size: 0.875rem; font-weight: 600; color: var(--text-dim);
+  transition: color var(--transition), background var(--transition);
+  text-decoration: none;
+}
+.sidebar-link:hover { color: var(--text); background: var(--surface-2); }
+.sidebar-link.active { color: var(--accent); background: var(--accent-dim); }
+
+.dash-content { padding: 2rem; }
+.dash-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 2rem; padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.dash-title { font-size: 1.5rem; }
+.dash-badge {
+  background: var(--accent-dim); color: var(--accent);
+  border: 1px solid rgba(245,158,11,0.3);
+  padding: 0.2rem 0.6rem; border-radius: 4px;
+  font-size: 0.7rem; letter-spacing: 0.1em;
+}
+
+@media (max-width: 768px) {
+  .dash-wrap { grid-template-columns: 1fr; }
+  .dash-sidebar {
+    position: static; height: auto;
+    border-right: none; border-bottom: 1px solid var(--border);
+    padding: 1rem;
+  }
+  .sidebar-nav { flex-direction: row; flex-wrap: wrap; }
+}
+</style>
+
+<script>
+  // Highlight active sidebar link
+  const path = window.location.pathname;
+  document.querySelectorAll<HTMLAnchorElement>('.sidebar-link').forEach(link => {
+    if (link.getAttribute('href') === path) link.classList.add('active');
+  });
+</script>

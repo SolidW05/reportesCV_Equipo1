@@ -1,0 +1,126 @@
+---
+import StatusBadge from '../ui/StatusBadge.astro';
+import type { ReportResponseDto } from '../../types/report';
+
+export interface Props {
+  report: ReportResponseDto;
+  showActions?: boolean;
+}
+const { report, showActions = false } = Astro.props;
+const dateFormatted = new Date(report.date).toLocaleDateString('es-MX', {
+  year: 'numeric', month: 'short', day: 'numeric'
+});
+---
+
+<article class="rcard animate-fade-up">
+  <div class="rcard-header">
+    <span class="rcard-id mono">#{report.idReport}</span>
+    <StatusBadge status={report.status} />
+  </div>
+
+  <p class="rcard-desc">{report.description}</p>
+
+  <div class="rcard-meta">
+    <span class="mono rcard-date">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      {dateFormatted}
+    </span>
+    <span class="mono rcard-loc">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Loc #{report.idLocation}
+    </span>
+  </div>
+
+  {report.observaciones && (
+    <p class="rcard-obs">{report.observaciones}</p>
+  )}
+
+  <div class="rcard-footer">
+    <a href={`/reports/${report.idReport}`} class="rcard-btn">
+      Ver detalle →
+    </a>
+    {showActions && (
+      <span class="rcard-actions" data-id={report.idReport}>
+        <button class="rcard-action-btn btn-status" data-id={report.idReport}>
+          Cambiar Estado
+        </button>
+        <button class="rcard-action-btn btn-delete" data-id={report.idReport}>
+          Eliminar
+        </button>
+      </span>
+    )}
+  </div>
+</article>
+
+<style>
+.rcard {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1.25rem 1.5rem;
+  display: flex; flex-direction: column; gap: 0.75rem;
+  transition: border-color var(--transition), box-shadow var(--transition),
+              transform var(--transition);
+  position: relative; overflow: hidden;
+}
+.rcard::after {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--accent); border-radius: 3px 0 0 3px;
+  opacity: 0; transition: opacity var(--transition);
+}
+.rcard:hover {
+  border-color: rgba(245,158,11,0.3);
+  box-shadow: var(--shadow-accent);
+  transform: translateY(-2px);
+}
+.rcard:hover::after { opacity: 1; }
+
+.rcard-header {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.rcard-id {
+  font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.08em;
+}
+.rcard-desc {
+  font-weight: 600; font-size: 0.9375rem; color: var(--text);
+  line-height: 1.4; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.rcard-meta {
+  display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
+}
+.rcard-date, .rcard-loc {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  font-size: 0.775rem; color: var(--text-muted);
+}
+.rcard-obs {
+  font-size: 0.825rem; color: var(--text-dim);
+  background: var(--surface-2); border-radius: var(--radius);
+  padding: 0.5rem 0.75rem; border-left: 2px solid var(--border);
+  font-style: italic;
+}
+.rcard-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.5rem; margin-top: 0.25rem;
+}
+.rcard-btn {
+  font-size: 0.8rem; font-weight: 700; color: var(--accent);
+  text-decoration: none; transition: gap var(--transition);
+  display: inline-flex; align-items: center;
+}
+.rcard-btn:hover { color: var(--accent-hover); letter-spacing: 0.02em; }
+.rcard-actions { display: flex; gap: 0.5rem; }
+.rcard-action-btn {
+  font-family: var(--font-display); font-weight: 700; font-size: 0.75rem;
+  padding: 0.3rem 0.7rem; border-radius: var(--radius); cursor: pointer;
+  border: none; transition: all var(--transition);
+}
+.btn-status {
+  background: var(--info-dim); color: var(--info);
+  border: 1px solid rgba(59,130,246,0.3);
+}
+.btn-status:hover { background: var(--info); color: #fff; }
+.btn-delete {
+  background: var(--danger-dim); color: var(--danger);
+  border: 1px solid rgba(239,68,68,0.3);
+}
+.btn-delete:hover { background: var(--danger); color: #fff; }
+</style>

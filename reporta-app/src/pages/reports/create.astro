@@ -1,0 +1,91 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import ReportForm from '../../components/reports/ReportForm.astro';
+---
+
+<MainLayout title="Crear Reporte">
+  <div class="container section">
+
+    <div class="page-header">
+      <div>
+        <div class="page-breadcrumb">
+          <a href="/reports">← Mis Reportes</a>
+        </div>
+        <h1 class="page-title">Crear Reporte</h1>
+        <p class="page-sub">Registra un nuevo problema en tu municipio.</p>
+      </div>
+    </div>
+
+    <div class="create-layout">
+      <div class="create-form-wrap">
+        <ReportForm />
+      </div>
+      <aside class="create-aside">
+        <div class="aside-card">
+          <h3 class="aside-title">💡 Consejos</h3>
+          <ul class="aside-list">
+            <li>Sé específico en la descripción del problema.</li>
+            <li>Adjunta una foto clara del problema si es posible.</li>
+            <li>Verifica el ID de ubicación con tu municipio.</li>
+            <li>Recibirás actualizaciones de estado en tu panel.</li>
+          </ul>
+        </div>
+        <div class="aside-card aside-api">
+          <div class="api-tag mono">API Endpoint</div>
+          <code class="api-url mono">POST /api/report</code>
+          <p class="api-note">multipart/form-data con campos <em>report</em> (JSON) e <em>image</em> (archivo).</p>
+        </div>
+      </aside>
+    </div>
+
+  </div>
+</MainLayout>
+
+<style>
+.page-header { margin-bottom: 2.5rem; }
+.page-breadcrumb {
+  margin-bottom: 0.5rem; font-size: 0.85rem;
+}
+.page-breadcrumb a { color: var(--text-muted); }
+.page-breadcrumb a:hover { color: var(--accent); }
+.page-title { font-size: clamp(1.8rem, 4vw, 3rem); margin-bottom: 0.25rem; }
+.page-sub { color: var(--text-muted); font-size: 0.9rem; }
+
+.create-layout {
+  display: grid; grid-template-columns: 1fr 320px; gap: 2.5rem;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .create-layout { grid-template-columns: 1fr; }
+  .create-aside { order: -1; }
+}
+
+.create-form-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2rem;
+}
+
+.aside-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1rem;
+}
+.aside-title { font-size: 1rem; margin-bottom: 0.75rem; }
+.aside-list {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  list-style: none; padding: 0; color: var(--text-dim); font-size: 0.85rem;
+  line-height: 1.55;
+}
+.aside-list li::before { content: '▸ '; color: var(--accent); }
+
+.aside-api {  }
+.api-tag {
+  font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.1em; margin-bottom: 0.4rem;
+}
+.api-url {
+  display: block; font-size: 0.875rem; color: var(--accent);
+  background: var(--accent-dim); padding: 0.4rem 0.75rem;
+  border-radius: var(--radius); margin-bottom: 0.6rem;
+}
+.api-note { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+</style>

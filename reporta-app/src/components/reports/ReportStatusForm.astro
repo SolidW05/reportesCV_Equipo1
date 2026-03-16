@@ -1,0 +1,193 @@
+---
+// ReportStatusForm.astro — Admin form to update report status and observations
+export interface Props {
+  reportId: number | string;
+  currentStatus?: string;
+  currentObs?: string;
+}
+const { reportId, currentStatus = "PENDING", currentObs = "" } = Astro.props;
+---
+
+<form
+  class="status-form"
+  id={`statusForm-${reportId}`}
+  data-report-id={reportId}
+>
+  <div class="sf-grid">
+    <div class="field">
+      <label class="field-label" for={`status-${reportId}`}>Nuevo Estado</label>
+      <select
+        id={`status-${reportId}`}
+        name="status"
+        class="field-input field-select"
+        required
+      >
+        <option value="0" selected={currentStatus === "PENDING"}
+          >Pendiente</option
+        >
+        <option value="1" selected={currentStatus === "IN_REVIEW"}
+          >En Revisión</option
+        >
+        <option value="2" selected={currentStatus === "RESOLVED"}
+          >Resuelto</option
+        >
+        <option value="3" selected={currentStatus === "REJECTED"}
+          >Rechazado</option
+        >
+      </select>
+    </div>
+
+    <div class="field sf-obs">
+      <label class="field-label" for={`obs-${reportId}`}>Observaciones</label>
+      <textarea
+        id={`obs-${reportId}`}
+        name="observaciones"
+        class="field-input field-textarea"
+        rows="3"
+        placeholder="Observaciones del administrador...">{currentObs}</textarea
+      >
+    </div>
+  </div>
+
+  <div class="sf-actions">
+    <button type="submit" class="sf-btn">Actualizar Estado</button>
+    <span class="sf-msg" role="alert" aria-live="polite"></span>
+  </div>
+</form>
+
+<style>
+  .status-form {
+    background: var(--surface-2);
+    border-radius: var(--radius);
+    padding: 1rem;
+  }
+  .sf-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .field-label {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .field-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    padding: 0.55rem 0.75rem;
+    width: 100%;
+    outline: none;
+    transition:
+      border-color var(--transition),
+      box-shadow var(--transition);
+  }
+  .field-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.12);
+  }
+  .field-select {
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2rem;
+  }
+  .field-textarea {
+    resize: vertical;
+    min-height: 70px;
+  }
+  .sf-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .sf-btn {
+    background: var(--accent);
+    color: var(--bg);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all var(--transition);
+    white-space: nowrap;
+  }
+  .sf-btn:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+  }
+  .sf-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .sf-msg {
+    font-size: 0.8rem;
+  }
+  .sf-msg.success {
+    color: var(--success);
+  }
+  .sf-msg.error {
+    color: var(--danger);
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>(".status-form").forEach((form) => {
+    const btn = form.querySelector<HTMLButtonElement>(".sf-btn")!;
+    const msg = form.querySelector<HTMLSpanElement>(".sf-msg")!;
+    const id = form.dataset.reportId!;
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const payload = {
+        idReport: Number(id),
+        status: String(fd.get("status")),
+        observaciones: String(fd.get("observaciones") ?? ""),
+      };
+      btn.disabled = true;
+      btn.textContent = "Guardando...";
+      msg.textContent = "";
+      msg.className = "sf-msg";
+
+      try {
+        const res = await fetch("/api/report/actualizar/estatus", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error(`Error ${res.status}`);
+        msg.textContent = "✓ Estado actualizado";
+        msg.className = "sf-msg success";
+        if ((window as any).showToast)
+          (window as any).showToast("Estado actualizado", "success");
+        setTimeout(() => window.location.reload(), 1200);
+      } catch (err) {
+        msg.textContent = `✗ ${(err as Error).message}`;
+        msg.className = "sf-msg error";
+        if ((window as any).showToast)
+          (window as any).showToast("Error al actualizar", "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Actualizar Estado";
+      }
+    });
+  });
+</script>

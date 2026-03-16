@@ -1,0 +1,201 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+---
+
+<MainLayout title="Inicio" description="Sistema de reportes ciudadanos de tu municipio">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="hero-grid"></div>
+      <div class="hero-glow"></div>
+    </div>
+    <div class="container hero-inner">
+      <div class="hero-tag mono animate-fade-up">Sistema de Reportes Ciudadanos v1.0</div>
+      <h1 class="hero-title animate-fade-up" style="animation-delay:80ms">
+        Reporta.<br/>
+        <span class="hero-accent">Tu ciudad</span><br/>
+        te escucha.
+      </h1>
+      <p class="hero-desc animate-fade-up" style="animation-delay:160ms">
+        Documenta problemas en tu municipio — baches, alumbrado, basura.
+        La autoridad competente recibirá y gestionará tu reporte.
+      </p>
+      <div class="hero-ctas animate-fade-up" style="animation-delay:240ms">
+        <a href="/reports/create" class="cta-primary">Crear Reporte</a>
+        <a href="/reports" class="cta-secondary">Ver Mis Reportes →</a>
+      </div>
+    </div>
+    <div class="hero-stat-bar">
+      <div class="container hero-stats">
+        <div class="stat">
+          <span class="stat-val mono">API</span>
+          <span class="stat-label">localhost:8083</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-val mono">REST</span>
+          <span class="stat-label">Spring Boot</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-val mono">TS</span>
+          <span class="stat-label">TypeScript</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-val mono">Astro</span>
+          <span class="stat-label">Framework</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="section features-section">
+    <div class="container">
+      <h2 class="section-heading">¿Qué puedes hacer?</h2>
+      <div class="features-grid stagger">
+        <div class="feature-card animate-fade-up">
+          <div class="feat-icon">📍</div>
+          <h3>Crear Reportes</h3>
+          <p>Registra problemas en tu zona con descripción, ubicación e imágenes adjuntas.</p>
+        </div>
+        <div class="feature-card animate-fade-up">
+          <div class="feat-icon">🔎</div>
+          <h3>Seguimiento en Tiempo Real</h3>
+          <p>Consulta el estado actual de tus reportes: Pendiente, En Revisión o Resuelto.</p>
+        </div>
+        <div class="feature-card animate-fade-up">
+          <div class="feat-icon">🖼️</div>
+          <h3>Adjuntar Evidencia</h3>
+          <p>Sube imágenes del problema para que las autoridades tengan contexto visual.</p>
+        </div>
+        <div class="feature-card animate-fade-up">
+          <div class="feat-icon">⚡</div>
+          <h3>Panel Administrativo</h3>
+          <p>Los administradores pueden filtrar por municipio, cambiar estados y agregar observaciones.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Strip -->
+  <section class="cta-strip">
+    <div class="container cta-strip-inner">
+      <p>¿Listo para reportar un problema en tu comunidad?</p>
+      <a href="/reports/create" class="cta-primary">Empezar ahora →</a>
+    </div>
+  </section>
+
+</MainLayout>
+
+<style>
+/* --- Hero --- */
+.hero {
+  position: relative; overflow: hidden;
+  min-height: calc(100vh - 64px); display: flex; flex-direction: column;
+}
+.hero-bg {
+  position: absolute; inset: 0; pointer-events: none;
+}
+.hero-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(245,158,11,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245,158,11,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.hero-glow {
+  position: absolute; top: -20%; left: 50%; transform: translateX(-50%);
+  width: 800px; height: 600px;
+  background: radial-gradient(circle, rgba(245,158,11,0.08) 0%, transparent 70%);
+}
+
+.hero-inner {
+  flex: 1; display: flex; flex-direction: column;
+  justify-content: center; padding-top: 5rem; padding-bottom: 2rem;
+  position: relative;
+}
+.hero-tag {
+  display: inline-block; margin-bottom: 1.5rem;
+  font-size: 0.72rem; color: var(--accent); letter-spacing: 0.12em;
+  text-transform: uppercase; background: var(--accent-dim);
+  border: 1px solid rgba(245,158,11,0.25); padding: 0.3rem 0.75rem;
+  border-radius: 99px; width: fit-content;
+}
+.hero-title {
+  font-size: clamp(3rem, 8vw, 6.5rem); font-weight: 800;
+  line-height: 0.95; letter-spacing: -0.04em;
+  margin-bottom: 1.5rem;
+}
+.hero-accent { color: var(--accent); }
+.hero-desc {
+  max-width: 480px; color: var(--text-dim); font-size: 1.05rem;
+  line-height: 1.7; margin-bottom: 2.5rem;
+}
+.hero-ctas {
+  display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;
+}
+.cta-primary {
+  background: var(--accent); color: var(--bg);
+  font-weight: 800; font-size: 0.9375rem; padding: 0.8rem 1.75rem;
+  border-radius: var(--radius); text-decoration: none;
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+  display: inline-block;
+}
+.cta-primary:hover {
+  background: var(--accent-hover); transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(245,158,11,0.35); color: var(--bg);
+}
+.cta-secondary {
+  color: var(--text-dim); font-weight: 600; font-size: 0.9rem;
+  text-decoration: none; transition: color var(--transition);
+}
+.cta-secondary:hover { color: var(--accent); }
+
+/* Stat Bar */
+.hero-stat-bar {
+  border-top: 1px solid var(--border); background: var(--surface);
+  padding: 1rem 0; position: relative;
+}
+.hero-stats {
+  display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;
+}
+.stat { display: flex; flex-direction: column; gap: 0.15rem; }
+.stat-val { font-size: 0.9rem; font-weight: 600; color: var(--accent); letter-spacing: 0.05em; }
+.stat-label { font-size: 0.75rem; color: var(--text-muted); }
+.stat-divider { width: 1px; height: 2rem; background: var(--border); flex-shrink: 0; }
+
+/* Features */
+.features-section { background: var(--surface); }
+.section-heading {
+  font-size: clamp(1.6rem, 3vw, 2.5rem); margin-bottom: 3rem;
+}
+.features-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+.feature-card {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2rem;
+  transition: border-color var(--transition), transform var(--transition);
+}
+.feature-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+.feat-icon { font-size: 2rem; margin-bottom: 1rem; }
+.feature-card h3 { font-size: 1.05rem; margin-bottom: 0.5rem; }
+.feature-card p { color: var(--text-dim); font-size: 0.875rem; line-height: 1.65; }
+
+/* CTA Strip */
+.cta-strip {
+  background: var(--accent-dim); border-top: 1px solid rgba(245,158,11,0.2);
+  border-bottom: 1px solid rgba(245,158,11,0.2); padding: 2.5rem 0;
+}
+.cta-strip-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1.5rem; flex-wrap: wrap;
+}
+.cta-strip p {
+  font-size: 1.15rem; font-weight: 600; color: var(--text);
+}
+</style>

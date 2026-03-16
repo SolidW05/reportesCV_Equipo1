@@ -11,11 +11,18 @@ import com.reporta.report_service.models.dto.ReportUpdateStatus;
 public interface ReportService {
 
         ReportResponseDto guardarReporte(ReportCreateDto report, MultipartFile image);
+
         ReportResponseDto guardarReporte(ReportCreateDto report);
+
         Long eliminarReporte(Long id);
-        ReportResponseDto actualizarReporte(Long id, ReportCreateDto report);
+
+        ReportResponseDto actualizarReporte(Long id, ReportCreateDto report, MultipartFile image);
+
         ReportResponseDto obtenerReportePorId(Long id);
+
         ReportResponseDto actualizarEstadoReporte(ReportUpdateStatus reportUpdateStatus);
+
         List<ReportResponseDto> obtenerReportesPorUsuario(Long idUser);
+
         List<ReportResponseDto> obtenerPorMunicipio(String municipio);
-} 
+}
