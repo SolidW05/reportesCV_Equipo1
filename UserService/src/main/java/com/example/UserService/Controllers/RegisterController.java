@@ -15,9 +15,16 @@ import org.springframework.web.bind.annotation.*;
 public class RegisterController {
     private final ServiceUser serviceUser;
 
-    @PostMapping("/resgistro")
-    public AuthUserDTO resgistro(@RequestBody @Valid RegisterUserDTO regdto){
+    @PostMapping("/registro")
+    public AuthUserDTO registro(@RequestBody @Valid RegisterUserDTO regdto){
         return serviceUser.registerUser(regdto);
     }
-
+    @GetMapping("/verify")
+    public String verificar(@RequestParam String token) {
+        boolean resultado = serviceUser.verificacionCuenta(token);
+        if (resultado) {
+            return "Cuenta verificada correctamente";
+        }
+        return "Token inválido o expirado";
+    }
 }

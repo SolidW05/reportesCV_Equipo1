@@ -18,23 +18,23 @@ public class EmailService {
 
     public void verificacionEmail(String email, String tokenVerificacion){
         String subject= "Verifica tu cuenta";
-        String path = "/req/signup/verify";
-        String message = "Clic the button para verificar email";
+        String path = "/api/Users/verify";
+        String message = "Haz clic en el botón para verificar tu correo electrónico";
         sendEmail(email,tokenVerificacion,subject,path,message);
     }
     public void sendEmail(String email, String token,String subject, String path, String message){
         try{
             String actionUrl = ServletUriComponentsBuilder.fromCurrentContextPath().path(path).queryParam("token", token).toUriString();
             String content = """
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border-radius: 8px; background-color: #f9f9f9; text-align: center;">
-                        <h2 style="color: #333;">%s</h2>
-                        <p style="font-size: 16px; color: #555;">%s</p>
-                        <a href="%s" style="display: inline-block; margin: 20px 0; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;">Proceed</a>
-                        <p style="font-size: 14px; color: #777;">Or copy and paste this link into your browser:</p>
-                        <p style="font-size: 14px; color: #007bff;">%s</p>
-                        <p style="font-size: 12px; color: #aaa;">This is an automated message. Please do not reply.</p>
-                    </div>
-                """.formatted(subject, message, actionUrl, actionUrl);
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border-radius: 8px; background-color: #f9f9f9; text-align: center;">
+            <h2 style="color: #333;">%s</h2>
+            <p style="font-size: 16px; color: #555;">%s</p>
+            <a href="%s" style="display: inline-block; margin: 20px 0; padding: 10px 20px; font-size: 16px; color: #fff; background-color: #007bff; text-decoration: none; border-radius: 5px;">Verificar cuenta</a>
+            <p style="font-size: 14px; color: #777;">O copia y pega este enlace en tu navegador:</p>
+            <p style="font-size: 14px; color: #007bff;">%s</p>
+            <p style="font-size: 12px; color: #aaa;">Este es un mensaje automático. Por favor no respondas a este correo.</p>
+        </div>
+    """.formatted(subject, message, actionUrl, actionUrl);
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper= new MimeMessageHelper(mimeMessage, true);
             helper.setTo(email);

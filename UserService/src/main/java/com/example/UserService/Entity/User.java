@@ -32,12 +32,14 @@ public class User implements UserDetails {
 
         @Enumerated(EnumType.STRING)
         @Column(name = "tipo_usuario", nullable = false)
+        @Builder.Default
         private TipoUsuario tipoUser = TipoUsuario.usuario;
 
         @Column(nullable = false)
+        @Builder.Default
         private Boolean activo = false;
 
-        @Column(name = "token_Verificacion", nullable = false)
+        @Column(name = "token_Verificacion")
         private String tokenVerificacion;
 
     public  enum TipoUsuario{
@@ -47,6 +49,11 @@ public class User implements UserDetails {
         @Override
         public String getUsername() {
                 return email; // usamos email como identificador
+        }
+
+        @Override
+        public String getPassword() {
+            return password;
         }
 
         @Override

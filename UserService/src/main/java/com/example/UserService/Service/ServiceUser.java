@@ -4,8 +4,10 @@ import com.example.UserService.DTO.AuthUserDTO;
 import com.example.UserService.DTO.RegisterUserDTO;
 import com.example.UserService.Entity.User;
 import com.example.UserService.Repository.RepositoryUser;
-import com.example.UserService.Settings.SecurityPassword;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,11 +17,17 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 
-public class ServiceUser {
+public class ServiceUser implements UserDetailsService {
     private final RepositoryUser respositoryUser;
     private final BCryptPasswordEncoder passwordEncoder;
-    //private final JwtService jwtService;
+    private final JwtService jwtService;
     private final EmailService emailService;
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return respositoryUser.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + email));
+    }
 
     public AuthUserDTO registerUser(RegisterUserDTO regdto){
         if (respositoryUser.findByEmail(regdto.getEmail()).isPresent()){
