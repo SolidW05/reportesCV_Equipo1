@@ -39,7 +39,6 @@ public class UsuarioControlador {
     @GetMapping("/verificar")
     public String verificar(@RequestParam("token") String token, Model model) {
         boolean validado = usuarioServicio.verificarCuenta(token);
-
         if (validado) {
             return "login";
         } else {

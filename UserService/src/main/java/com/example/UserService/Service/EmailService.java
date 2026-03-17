@@ -24,7 +24,8 @@ public class EmailService {
     }
     public void sendEmail(String email, String token,String subject, String path, String message){
         try{
-            String actionUrl = ServletUriComponentsBuilder.fromCurrentContextPath().path(path).queryParam("token", token).toUriString();
+            //La ip se tiene que estar cambiando para que funcione
+            String actionUrl = "http://192.168.1.86:8080" + path + "?token=" + token;
             String content = """
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border-radius: 8px; background-color: #f9f9f9; text-align: center;">
             <h2 style="color: #333;">%s</h2>

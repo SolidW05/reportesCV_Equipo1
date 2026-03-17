@@ -38,5 +38,4 @@ public class UsuarioSesionDTO {
     private Integer id;
     private TipoUsuario tipoUsuario;
 
-
 }

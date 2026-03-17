@@ -3,6 +3,8 @@ package com.example.UserService.Service;
 import com.example.UserService.DTO.AuthUserDTO;
 import com.example.UserService.DTO.RegisterUserDTO;
 import com.example.UserService.Entity.User;
+import com.example.UserService.Exception.EmailYaRegistradoException;
+import com.example.UserService.Exception.UsuarioNoEncontradoException;
 import com.example.UserService.Repository.RepositoryUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,12 +28,12 @@ public class ServiceUser implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return respositoryUser.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + email));
+                .orElseThrow(() -> new UsuarioNoEncontradoException(email));
     }
 
     public AuthUserDTO registerUser(RegisterUserDTO regdto){
         if (respositoryUser.findByEmail(regdto.getEmail()).isPresent()){
-            throw new RuntimeException("Error");
+            throw new EmailYaRegistradoException(regdto.getEmail());
         }
         String token = UUID.randomUUID().toString();
         User user= User.builder()

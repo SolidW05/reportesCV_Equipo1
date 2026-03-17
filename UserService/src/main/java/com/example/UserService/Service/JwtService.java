@@ -1,5 +1,6 @@
 package com.example.UserService.Service;
 
+import com.example.UserService.Entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -19,15 +20,18 @@ public class JwtService {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    // Tiempo de vida del token: 15 minutos
-    private final long JWT_EXPIRATION = 900000;
+    private final long JWT_EXPIRATION = 28800000;
 
     // ─── GENERAR TOKEN ───────────────────────────────────────────
 
-    public String generateToken(UserDetails user) {
+    public String generateToken(UserDetails userDetails) {
+        User user = (User) userDetails;
+
         return Jwts.builder()
-                .setSubject(user.getUsername())    // guarda el email dentro del token
-                .setIssuedAt(new Date())            // fecha de creación
+                .setSubject(user.getUsername())// guarda el email dentro del token
+                .claim("id", user.getId())
+                .claim("tipoUser", user.getTipoUser().name())
+                .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();

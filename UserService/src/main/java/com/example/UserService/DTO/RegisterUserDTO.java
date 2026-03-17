@@ -7,5 +7,4 @@ public class RegisterUserDTO {
     private String name;
     private String email;
     private String password;
-
 }

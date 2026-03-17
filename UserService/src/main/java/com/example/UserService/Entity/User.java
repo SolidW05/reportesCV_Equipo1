@@ -48,7 +48,7 @@ public class User implements UserDetails {
 
         @Override
         public String getUsername() {
-                return email; // usamos email como identificador
+        return email; // usamos email como identificador
         }
 
         @Override
@@ -58,8 +58,7 @@ public class User implements UserDetails {
 
         @Override
         public Collection<? extends GrantedAuthority> getAuthorities() {
-                // convertimos tipoUser en un rol que Spring Security entiende
-                return List.of(new SimpleGrantedAuthority("ROLE_" + tipoUser.name()));
+                return List.of(new SimpleGrantedAuthority("ROLE_" + tipoUser.name().toUpperCase()));
         }
 
         @Override
