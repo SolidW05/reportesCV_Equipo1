@@ -31,11 +31,6 @@ public class AutoridadController {
         Autoridad actualizada = autoridadService.actualizarAutoridad(id, request);
         return ResponseEntity.ok(actualizada);
     }
-
-    @GetMapping("/test")
-    public ResponseEntity<String> test() {
-        return ResponseEntity.ok("Autoridades Service funcionando en puerto 8083!");
-    }
     @GetMapping("/usuario/{idUsuario}")
     public ResponseEntity<Autoridad> obtenerPorIdUsuario(@PathVariable Integer idUsuario) {
         return ResponseEntity.ok(autoridadService.obtenerPorIdUsuario(idUsuario));
