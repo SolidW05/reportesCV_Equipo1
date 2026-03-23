@@ -1,17 +1,19 @@
 ---
-import MainLayout from '../../layouts/MainLayout.astro';
-import ReportList from '../../components/reports/ReportList.astro';
-import type { ReportResponseDto } from '../../types/report';
+import MainLayout from "../../layouts/MainLayout.astro";
+import ReportList from "../../components/reports/ReportList.astro";
+import type { ReportResponseDto } from "../../types/report";
 
 // Get userId from query param (default 1)
 const urlParams = new URL(Astro.request.url);
-const userId = Number(urlParams.searchParams.get('userId') ?? 1);
+const userId = Number(urlParams.searchParams.get("userId") ?? 1);
 
 let reports: ReportResponseDto[] = [];
 let error: string | null = null;
 
 try {
-  const res = await fetch(`http://localhost:8083/api/report/usuarios/${userId}`);
+  const res = await fetch(
+    `http://localhost:8080/api/report/usuarios/${userId}`,
+  );
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   reports = await res.json();
 } catch (e) {
@@ -21,7 +23,6 @@ try {
 
 <MainLayout title="Mis Reportes">
   <div class="container section">
-
     <!-- Page Header -->
     <div class="page-header">
       <div>
@@ -32,8 +33,15 @@ try {
       <div class="page-actions">
         <form method="get" class="uid-form">
           <label for="userId" class="uid-label mono">ID Usuario</label>
-          <input id="userId" name="userId" type="number" min="1"
-                 value={userId} class="uid-input" placeholder="ID" />
+          <input
+            id="userId"
+            name="userId"
+            type="number"
+            min="1"
+            value={userId}
+            class="uid-input"
+            placeholder="ID"
+          />
           <button type="submit" class="uid-btn">Buscar</button>
         </form>
         <a href="/reports/create" class="btn-new">+ Nuevo Reporte</a>
@@ -41,72 +49,134 @@ try {
     </div>
 
     <!-- Error State -->
-    {error && (
-      <div class="alert-error">
-        <strong>Error al cargar reportes:</strong> {error}
-        <p class="mono" style="font-size:0.78rem; margin-top:0.25rem; opacity:0.7">
-          Asegúrate de que el backend esté corriendo en localhost:8083
-        </p>
-      </div>
-    )}
+    {
+      error && (
+        <div class="alert-error">
+          <strong>Error al cargar reportes:</strong> {error}
+          <p
+            class="mono"
+            style="font-size:0.78rem; margin-top:0.25rem; opacity:0.7"
+          >
+            Asegúrate de que el backend esté corriendo en localhost:8083
+          </p>
+        </div>
+      )
+    }
 
     <!-- Report List -->
-    {!error && (
-      <div class="rlist-meta mono" style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.78rem;">
-        {reports.length} reporte{reports.length !== 1 ? 's' : ''} encontrado{reports.length !== 1 ? 's' : ''}
-      </div>
-    )}
+    {
+      !error && (
+        <div
+          class="rlist-meta mono"
+          style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.78rem;"
+        >
+          {reports.length} reporte{reports.length !== 1 ? "s" : ""} encontrado
+          {reports.length !== 1 ? "s" : ""}
+        </div>
+      )
+    }
     {!error && <ReportList reports={reports} />}
-
   </div>
 </MainLayout>
 
 <style>
-.page-header {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  gap: 1.5rem; margin-bottom: 2.5rem; flex-wrap: wrap;
-}
-.page-tag {
-  font-size: 0.72rem; color: var(--accent); lettter-spacing: 0.1em; margin-bottom: 0.4rem;
-}
-.page-title { font-size: clamp(1.8rem, 4vw, 3rem); margin-bottom: 0.25rem; }
-.page-sub { color: var(--text-muted); font-size: 0.9rem; }
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+  }
+  .page-tag {
+    font-size: 0.72rem;
+    color: var(--accent);
+    lettter-spacing: 0.1em;
+    margin-bottom: 0.4rem;
+  }
+  .page-title {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    margin-bottom: 0.25rem;
+  }
+  .page-sub {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
 
-.page-actions {
-  display: flex; align-items: flex-end; gap: 0.75rem; flex-wrap: wrap;
-}
-.uid-form { display: flex; align-items: flex-end; gap: 0.4rem; }
-.uid-label {
-  font-size: 0.7rem; color: var(--text-muted); display: block;
-  margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.06em;
-}
-.uid-input {
-  background: var(--surface-2); border: 1px solid var(--border);
-  color: var(--text); border-radius: var(--radius); padding: 0.55rem 0.75rem;
-  font-family: var(--font-mono); font-size: 0.875rem; width: 90px; outline: none;
-  transition: border-color var(--transition);
-}
-.uid-input:focus { border-color: var(--accent); }
-.uid-btn {
-  background: var(--surface-2); color: var(--text-dim);
-  border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 0.55rem 0.9rem; font-family: var(--font-display);
-  font-weight: 600; font-size: 0.8rem; cursor: pointer;
-  transition: all var(--transition);
-}
-.uid-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .page-actions {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .uid-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.4rem;
+  }
+  .uid-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .uid-input {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: var(--radius);
+    padding: 0.55rem 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    width: 90px;
+    outline: none;
+    transition: border-color var(--transition);
+  }
+  .uid-input:focus {
+    border-color: var(--accent);
+  }
+  .uid-btn {
+    background: var(--surface-2);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.55rem 0.9rem;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .uid-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
 
-.btn-new {
-  background: var(--accent); color: var(--bg);
-  font-weight: 800; font-size: 0.85rem; padding: 0.6rem 1.1rem;
-  border-radius: var(--radius); text-decoration: none;
-  transition: all var(--transition); white-space: nowrap;
-}
-.btn-new:hover { background: var(--accent-hover); color: var(--bg); transform: translateY(-1px); }
+  .btn-new {
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 800;
+    font-size: 0.85rem;
+    padding: 0.6rem 1.1rem;
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: all var(--transition);
+    white-space: nowrap;
+  }
+  .btn-new:hover {
+    background: var(--accent-hover);
+    color: var(--bg);
+    transform: translateY(-1px);
+  }
 
-.alert-error {
-  background: var(--danger-dim); border: 1px solid rgba(239,68,68,0.3);
-  border-radius: var(--radius-lg); padding: 1rem 1.25rem;
-  color: var(--danger); margin-bottom: 2rem;
-}
+  .alert-error {
+    background: var(--danger-dim);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    color: var(--danger);
+    margin-bottom: 2rem;
+  }
 </style>
