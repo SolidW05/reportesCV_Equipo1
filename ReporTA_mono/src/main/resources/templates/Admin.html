@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Info</title>
+    <link rel="stylesheet" href="css/stylePgs.css" />
+    <link rel="stylesheet" href="css/stylePopup.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <link rel="stylesheet" href="css/leaflet.css" />
+
+  </head>
+  <body th:data-id="${usuario.id}">
+    <header>
+      <nav class="navbar section-content">
+        <a href="#" class="nav-logo">
+          <h2 class="logo-text">Reportes</h2>
+        </a>
+        <ul class="nav-menu">
+          <button id="menu-close-button" class="fas fa-times"></button>
+          <li class="nav-item">
+            <a href="#tabla-usuario" class="nav-link">Reporte</a>
+          </li>
+        </ul>
+        <button id="menu-open-button" class="fas fa-bars"></button>
+      </nav>
+    </header>
+    <main>
+      <section class="hero-section">
+        <div class="section-content">
+          <div class="hero-details">
+            <h2 class="title" th:text="'Hola, ' + ${usuario.nombre}">></h2>
+            <h3 class="subtitle">Comienza A reportar</h3>
+            <p class="description">
+              Cada reporte se mostrara en este apartado, y podras ver en que
+              estado se encuentra mediante una tabla generada por la pagina.
+            </p>
+          </div>
+          <div class="hero-image-wrapper">
+            <img src="images/RCP copy.png" alt="hero" class="hero-imagen" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Tabla de reportes del usuario -->
+      <section id="tabla-usuario-reportes" class="section-content">
+        <h2 class="section-title">Reportes Asignados</h2>
+        <div class="table-responsive">
+          <table id="tabla-usuario" class="reporte-tabla">
+            <thead>
+            <tr>
+              <th>ID Reporte</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th>Calle</th>
+              <th>Número</th>
+              <th>Colonia</th>
+              <th>Municipio</th>
+              <th>C.P.</th>
+              <th>Autoridad</th>
+              <th>Servicio</th>
+              <th>Encargado</th>
+              <th>Teléfono</th>
+            </tr>
+            </thead>
+            <tfoot>
+              <tr>
+                <th></th> <!-- ID Reporte -->
+                <th></th> <!-- Fecha -->
+                <th>
+                  Estado:
+                  <select id="filtro-estado">
+                    <option value="">Todos</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Revision">Revision</option>
+                    <option value="Proceso">Proceso</option>
+                    <option value="Terminado">Terminado</option>
+                  </select>
+                </th>
+                <th></th> <!-- Calle -->
+                <th></th> <!-- Número -->
+                <th></th> <!-- Colonia -->
+                <th>
+                  <input type="text" id="filtro-municipio" placeholder="Buscar municipio">
+                </th>
+                <th></th> <!-- C.P. -->
+                <th></th> <!-- Autoridad -->
+                <th>
+                  <input type="text" id="filtro-servicio" placeholder="Buscar servicio">
+                </th>
+                <th></th> <!-- Encargado -->
+                <th></th> <!-- Teléfono -->
+              </tr>
+            </tfoot>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <!-- formulario Section -->
+      <section class="contact-section" id="contact" style="display: none;">
+        <h2 class="section-title">Reporte</h2>
+        <div class="section-content">
+          <form id="formulario-reporte" action="#" class="contact-form" method="post">
+            <label for="Tipo">Tipo de problema:</label>
+            <select id="servicio" class="form-input" disabled>
+              <option value="">Seleccione un reporte</option>
+            </select>
+            <label for="Tipo">municipio</label>
+            <select id="municipio" class="form-input" disabled>
+              <option value="">Seleccione un reporte</option>
+            </select>
+            <label for="Tipo">Autoridad</label>
+            <select id="autoridad" class="form-input" disabled>
+              <option value="">Seleccione un reporte</option>
+            </select>
+            <label for="Fecha">Fecha</label>
+            <input
+              type="date"
+              name="fecha"
+              id="fecha"
+              placeholder="Seleccione un reporte"
+              class="form-input"
+              disabled
+            />
+            <label for="colonia">Colonia:</label>
+            <input
+              type="text"
+              name="colonia"
+              id="colonia"
+              placeholder="Seleccione un reporte"
+              class="form-input"
+              disabled
+            />
+            <label for="calle">Calle: </label>
+            <input
+              type="text"
+              name="calle"
+              id="calle"
+              placeholder="Seleccione un reporte"
+              class="form-input"
+              disabled
+            />
+            <label for="numero">Numero: </label>
+            <input
+              type="text"
+              name="numero"
+              id="numero"
+              placeholder="Seleccione un reporte"
+              class="form-input"
+              disabled
+            />
+            <label for="codigoPostal">Codigo Postal: </label>
+            <input
+              type="text"
+              name="codigoPostal"
+              id="codigoPostal"
+              placeholder="Seleccione un reporte"
+              class="form-input"
+              pattern="[0-9]+"
+              inputmode="numeric"
+              disabled
+            />
+            <label for="detalles">Descripcion</label>
+            <textarea
+              class="form-input"
+              name="Detalles"
+              id="descripcion"
+              placeholder="Seleccione un reporte"
+              disabled
+            ></textarea>
+            <label for="Tipo">Estatus:</label>
+            <select name="estatus" id="Estatus" class="form-input">
+              <option value="">Seleccione un reporte</option>
+            </select>
+            <label for="Observaciones">Observaciones</label>
+            <textarea
+                    class="form-input"
+                    name="Observaciones"
+                    id="observaciones"
+                    placeholder="Observaciones"
+            ></textarea>
+            <h2 class="section-title">Ubicación del Reporte</h2>
+            <div id="mapa-reporte" style="height: 400px; width: 100%; margin-top: 20px;"></div>
+
+            <button type="submit" class="submit-button">Enviar</button>
+          </form>
+        </div>
+      </section>
+      <!-- Creacion del popup, al enviar un reporte -->
+
+      <dialog data-modal class="popup" id="popup">
+        <div class="popup-header">
+          <div class="popup-title">Reporte Actualizado</div>
+          <button data-close-button class="popup-close">&times;</button>
+        </div>
+
+        <div class="popup-content">
+          <p class="popup-message" id="popup-message-crear">
+          </p>
+        </div>
+        <div style="display: flex;
+          justify-content: flex-end;
+          gap: 15px;">
+          <button data-close-button class="btn-eliminar">Cerrar</button>
+        </div>
+
+       </dialog>
+      <!-- Footer -->
+      <footer class="footer-section">
+        <div class="section-content">
+          <p class="copyright-text">Centro Universitario De Tonala</p>
+          <div class="social-link-list">
+            <p>www.pagina.com</p>
+          </div>
+          <p class="policy-text">
+            <a href="#" class="policy-link">Telefono</a>
+            <span class="separator">.</span>
+            <a href="#" class="policy-link">Correo</a>
+          </p>
+        </div>
+      </footer>
+    </main>
+    <style>
+      input::placeholder:disabled {
+        color: #bbb; /* color para el placeholder de inputs deshabilitados */
+      }
+
+      input:disabled {
+        background-color: rgba(0, 0, 0, 0.5);
+        color: #888;
+        cursor: not-allowed;
+      }
+      textarea:disabled {
+        background-color: rgba(0, 0, 0, 0.5);
+        color: #888;
+        cursor: not-allowed;
+      }
+    </style>
+    <script>
+      const popup = document.querySelectorAll("[data-modal]");
+
+      document.querySelectorAll("[data-close-button]").forEach(button => {
+        button.addEventListener("click", () => {
+        popup.forEach(popup => {
+            popup.close();
+          });
+        });
+      });
+    </script>
+    <script type="module" src="js/scriptRpt.js"></script>
+    <script type="module" src="js/scriptGetReportesAu.js"></script>
+    <script type="module" src="js/scripTablas.js"></script>
+    <script type="module" src="js/scriptActualizarEstado.js"></script>
+    <script src="js/leaflet.js"></script>
+    <script src="js/mapaUbicacionReporte.js"></script>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  </body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reportes</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+    />
+    <link rel="stylesheet" href="css/stylePgs.css" />
+  </head>
+  <body>
+    <!-- HEADER / NAVBAR-->
+    <header>
+      <nav class="navbar section-content">
+        <a href="#" class="nav-logo">
+          <h2 class="logo-text">Pagina</h2>
+        </a>
+        <ul class="nav-menu">
+          <button id="menu-close-button" class="fas fa-times"></button>
+          <li class="nav-item">
+            <a href="#" class="nav-link">Inicio</a>
+          </li>
+          <li class="nav-item">
+            <a href="#about" class="nav-link">Descripcion</a>
+          </li>
+          <li class="nav-item">
+            <a href="#menu" class="nav-link">ODS</a>
+          </li>
+          <li class="nav-item">
+            <a href="#testimonials" class="nav-link">Equipo</a>
+          </li>
+          <li class="nav-item">
+            <a href="#gallery" class="nav-link">Tipos</a>
+          </li>
+          <li onclick="window.location.href='/login'" class="nav-item">
+            <a class="nav-link">Iniciar Sesion</a>
+          </li>
+          <!-- <li class="nav-item">
+            <a href="#contact" class="nav-link">Reporte</a>
+          </li> -->
+        </ul>
+        <button id="menu-open-button" class="fas fa-bars"></button>
+      </nav>
+    </header>
+
+    <!-- HERO SECTION -->
+    <main>
+      <section class="hero-section">
+        <div class="section-content">
+          <div class="hero-details">
+            <h2 class="title">ReporTA</h2>
+            <h3 class="subtitle">Comunidad unidad.</h3>
+            <p class="description">
+              Dicho proposito es que la comunidad pueda reportar problemas
+              dentro de su comunidad, y que las autoridades correspondientes
+            </p>
+            <div class="buttons">
+              <a href="/login" class="button orden-now">Iniciar Sesion</a>
+              <!-- <a href="#" class="button contact-us">Contact us</a> -->
+            </div>
+          </div>
+          <div class="hero-image-wrapper">
+            <img src="images/RCP copy.png" alt="hero" class="hero-imagen" />
+          </div>
+        </div>
+      </section>
+
+      <!-- ABOUT SECTION -->
+      <section class="about-section" id="about">
+        <div class="section-content">
+          <div class="about-imagen-wrapper">
+            <img src="images/about-image.jpg" alt="about" class="about-image" />
+          </div>
+          <div class="about-details">
+            <h2 class="section-title">Descripcion</h2>
+            <p class="text">
+              El uso facil de una aplicación sencilla para la comunidad
+              involucrada para identificar problemas dentro de esa comunidad, y
+              mejorar la respuesta de las autoridades correspondientes, y formar
+              una organización responsable.
+            </p>
+            <div class="social-link-list">
+              <a href="#" class="social-link"
+                ><i class="fa-brands fa-facebook"></i
+              ></a>
+              <a href="#" class="social-link"
+                ><i class="fa-brands fa-instagram"></i
+              ></a>
+              <a href="#" class="social-link"
+                ><i class="fa-brands fa-x-twitter"></i
+              ></a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Menu Section -->
+      <section class="menu-section" id="menu">
+        <h2 class="section-title">ODS</h2>
+        <div class="section-content">
+          <ul class="menu-list">
+            <li class="menu-item">
+              <img
+                src="images/S-WEB-Goal-11.png"
+                alt="Hot Beverages"
+                class="menu-image"
+              />
+              <h3 class="name">N. 11</h3>
+              <p class="text">
+                Busca lograr ciudades inclusivas, seguras y sostenibles mediante
+                urbanización responsable y acceso equitativo.
+              </p>
+            </li>
+            <li class="menu-item">
+              <img
+                src="images/S-WEB-Goal-06.png"
+                alt="cold Beverages"
+                class="menu-image"
+              />
+              <h3 class="name">N. 6</h3>
+              <p class="text">
+                Reducir el impacto ambiental negativo per cápita de las
+                ciudades, mejorando residuos y calidad del aire.
+              </p>
+            </li>
+            <li class="menu-item">
+              <img
+                src="images/S-WEB-Goal-13.png"
+                alt="Refreshment"
+                class="menu-image"
+              />
+              <h3 class="name">N. 13</h3>
+              <p class="text">
+                Adoptar medidas urgentes para combatir el cambio climático y sus
+                efectos en todo el planeta.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Testimonials -->
+      <section class="testimonials-section" id="testimonials">
+        <h2 class="section-title">Equipo</h2>
+        <div class="section-content">
+          <div class="slider-container swiper">
+            <div class="slider-wrapper">
+              <ul class="testimonial-list swiper-wrapper">
+                <li class="testimonial swiper-slide">
+                  <img src="images/user-1.jpeg" alt="User" class="user-image" />
+                  <h3 class="name">Carlos</h3>
+                  <i class="feedback"
+                    >Estudiante de ingenieria en Ciencias Computacionales
+                  especializado en CSS y HTML y le encantan los perros.</i
+                  >
+                </li>
+                <li class="testimonial swiper-slide">
+                  <img src="images/user-2.jpeg" alt="User" class="user-image" />
+                  <h3 class="name">Ramon</h3>
+                  <i class="feedback"
+                    >Estudiante de ingenieria en Ciencias Computacionales, CEO de SignLearn y especializado en Js y html.</i
+                  >
+                </li>
+                <li class="testimonial swiper-slide">
+                  <img src="images/user-3.jpeg" alt="User" class="user-image" />
+                  <h3 class="name">Fernando</h3>
+                  <i class="feedback"
+                    >Estudiante de ingenieria en Ciencias Computacionales, stake holder de Ingentario y SignLearn,
+                  Especializado en Spring. Tambien le encantan los perros.</i
+                  >
+                </li>
+                <li class="testimonial swiper-slide">
+                  <img src="images/user-4.jpeg" alt="User" class="user-image" />
+                  <h3 class="name">Jesus</h3>
+                  <i class="feedback"
+                    >Estudiante de ingenieria en Ciencias Computacionales, especializado en APIS que no sean de google,
+                    y CEO de Ingentario.</i
+                  >
+                </li>
+              </ul>
+
+              <div class="swiper-pagination"></div>
+              <div class="swiper-slide-button swiper-button-prev"></div>
+              <div class="swiper-slide-button swiper-button-next"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Gallery Section -->
+      <section class="gallery-section" id="gallery">
+        <h2 class="section-title">Tipo de problemas</h2>
+        <div class="section-content">
+          <ul class="gallery-list">
+            <li class="gallery-item">
+              <img
+                src="images/basura.jpg"
+                alt="Gallery"
+                class="gallery-image"
+              />
+            </li>
+            <li class="gallery-item">
+              <img
+                src="images/Electric.jpeg"
+                alt="Gallery"
+                class="gallery-image"
+              />
+            </li>
+            <li class="gallery-item">
+              <img src="images/agua.jpg" alt="Gallery" class="gallery-image" />
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="footer-section">
+        <div class="section-content">
+          <p class="copyright-text">@2025. All rights reserved.</p>
+          <div class="social-link-list">
+            <a href="#" class="social-link"
+              ><i class="fa-brands fa-facebook"></i
+            ></a>
+            <a href="#" class="social-link"
+              ><i class="fa-brands fa-instagram"></i
+            ></a>
+            <a href="#" class="social-link"
+              ><i class="fa-brands fa-x-twitter"></i
+            ></a>
+          </div>
+          <p class="policy-text">
+            <a href="#" class="policy-link">Privacy policy</a>
+            <span class="separator">.</span>
+            <a href="#" class="policy-link">Refund policy</a>
+          </p>
+        </div>
+      </footer>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="js/scriptPgs.js"></script>
+  </body>
+</html>

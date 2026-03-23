@@ -1,0 +1,84 @@
+quitar de la tabla de reportes el tipo de problema
+
+*El tipo de problema a escoger debe ser la columna de servicios
+*ponerle al formulario municipio
+*autoridad
+
+*Agregarle al formulario dos tablas
+*una tabla con todos los reportes hechos
+*una tabla con los reportes hechos por el propio usuario;
+
+
+--listo//reportes
+{
+ --   "idReporte": 1000,
+  --  "descripcion": "Fuga de agua en la calle",
+  --  "estado": "Pendiente",
+ --   "fechaReporte": "2025-04-01",
+  --  "foto": null,
+    "ubicacion": {
+      "idUbicacion": 1000,
+  --    "calle": "Av. Reforma",
+    --  "numero": "123",
+   --   "colonia": "Centro",
+   --   "codigoPostal": "06000",
+     "municipio": {
+        "idMunicipio": 120,
+    --    "municipio": "Villa Hidalgo"
+      }
+    },
+    "usuario": {
+      "idUsuario": 1000,
+      "nombre": "Ana Torres",
+      "tipoUsuario": "usuario",
+      "email": "ana.torres@example.com",
+      "password": "pass123",
+      "curp": "TORA010101MDFXXX01"
+    },
+    "autoridad": {
+      "idAutoridad": 1000,
+      "usuario": {
+        "idUsuario": 1001,
+     -- "nombre": "Luis Pérez",
+        "tipoUsuario": "autoridad",
+        "email": "luis.perez@example.com",
+        "password": "pass456",
+        "curp": "PERL020202HDFXXX02"
+      },
+--      "autoridad": "Policía Municipal",
+ --     "servicio": "Seguridad",
+    --  "telefono": "5551234567",
+      "municipio": {
+        "idMunicipio": 1,
+        "municipio": "Acatic"
+      }
+    }
+  },
+
+--listo// otra pericion que muestre solo lo del usuario.
+--listo // peticiones para el servicio
+
+
+-- listo // peticiones para traer autoridades dependiendo del servicio y municipio,
+
+    "autoridad": {
+    --  "idAutoridad": 1001,
+      "usuario": {
+        "idUsuario": 1003,
+        "nombre": "Carlos Díaz",
+        "tipoUsuario": "autoridad",
+        "email": "carlos.diaz@example.com",
+        "password": "pass321",
+        "curp": "DIAC040404HDFXXX04"
+      },
+     -- "autoridad": "Protección Civil",
+      "servicio": "Emergencias",
+      "telefono": "5559876543",
+      "municipio": {
+        "idMunicipio": 1,
+        "municipio": "Acatic"
+      }
+    }
+
+// peticiones para traer lor reportes por autoridad, debe venir a la autoridad a la que va y al servicio
+// ya que pueden ser encargados de varias autoridades.

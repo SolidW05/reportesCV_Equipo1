@@ -1,0 +1,47 @@
+
+
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);  /* Este es el truco para centrarlo */
+    border: 1px solid black;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    z-index: 10;
+    background-color: white;
+    width: 500px;
+    max-width: 80%;
+}
+
+.popup-header{
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 20px;
+}
+
+.popup-header .popup-title{
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.popup-header .popup-close{
+    cursor: pointer;
+    border: none;
+    outline: none;
+    background: none;
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.popup-content .popup-message{
+    padding: 10px 15px;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #333;
+}

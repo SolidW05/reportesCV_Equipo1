@@ -1,0 +1,279 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Montserrat", serif;
+}
+
+body {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f5f5f5;
+    padding: 15px;
+}
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    background-color: white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Estilos para pantallas grandes (desktop) */
+@media screen and (min-width: 769px) {
+    .container {
+        display: flex;
+        height: 500px;
+    }
+    
+    .container-form {
+        width: 50%;
+        border-right: 1px solid #eee;
+    }
+    
+    .container-welcome {
+        position: absolute;
+        width: 50%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #3AB397;
+        transform: translateX(100%);
+        transition: transform 0.5s ease-in-out;
+        border-radius: 50% 0 0 50%;
+    }
+    
+    .container.toggle .container-welcome {
+        transform: translateX(0);
+        border-radius: 0 50% 50% 0;
+        background-color: #3AA8AD;
+    }
+    
+    .sign-up {
+        transform: translateX(-100%);
+    }
+    
+    .container.toggle .sign-in {
+        transform: translateX(100%);
+    }
+    
+    .container.toggle .sign-up {
+        transform: translateX(0);
+    }
+    
+    .welcome-sign-in {
+        transform: translateX(100%);
+    }
+    
+    .container.toggle .welcome-sign-in {
+        transform: translateX(0);
+    }
+    
+    .container.toggle .welcome-sign-up {
+        transform: translateX(-100%);
+    }
+}
+
+/* Estilos para pantallas pequeñas (móviles) */
+@media screen and (max-width: 768px) {
+    .container {
+        height: auto;
+    }
+    
+    .container-form {
+        width: 100%;
+    }
+    
+    .container-welcome {
+        width: 100%;
+        padding: 20px;
+        background-color: #3AB397;
+        text-align: center;
+    }
+    
+    .welcome {
+        position: static !important;
+        transform: none !important;
+        margin: 10px 0;
+    }
+    
+    .sign-up, .sign-in {
+        transform: none !important;
+    }
+    
+    .container:not(.toggle) .sign-up,
+    .container:not(.toggle) .welcome-sign-in {
+        display: none;
+    }
+    
+    .container.toggle .sign-in,
+    .container.toggle .welcome-sign-up {
+        display: none;
+    }
+}
+
+/* Estilos comunes para todos los tamaños */
+.container-form {
+    overflow: hidden;
+    background-color: white;
+}
+
+.container-form form {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.5s ease-in;
+    padding: 30px 20px;
+}
+
+.container-form h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.social-networks {
+    font-size: 18px;
+    display: flex;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.social-networks ion-icon {
+    border: 1px solid #C9CCCB;
+    border-radius: 6px;
+    padding: 8px;
+    cursor: pointer;
+}
+
+.container-form span {
+    font-size: 12px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.container-input {
+    width: 100%;
+    max-width: 300px;
+    height: 40px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 0 15px;
+    background-color: #EEEEEE;
+    border-radius: 4px;
+}
+
+.container-input input,
+.container-input select {
+    border: none;
+    outline: none;
+    width: 100%;
+    height: 100%;
+    background-color: inherit;
+    font-size: 14px;
+}
+
+.container-input select {
+    color: #333;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.container-form a {
+    color: #0066cc;
+    font-size: 14px;
+    margin-bottom: 20px;
+    text-decoration: none;
+}
+
+.container-form a:hover {
+    text-decoration: underline;
+}
+
+.button {
+    width: 100%;
+    max-width: 200px;
+    height: 45px;
+    font-size: 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    background-color: #3AB397;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+.button:hover {
+    background-color: #2d9a81;
+}
+
+#regresar {
+    background-color: #ff3333;
+}
+
+#regresar:hover {
+    background-color: #e62e2e;
+}
+
+.container-welcome .welcome {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 0 20px;
+    color: white;
+    transition: transform 0.5s ease-in-out;
+    text-align: center;
+    width: 100%;
+}
+
+.container-welcome h3 {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.container-welcome p {
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.container-welcome .button {
+    border: 2px solid white;
+    background-color: transparent;
+}
+
+.container-welcome .button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.mensaje-exito {
+    display: none;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    font-weight: bold;
+    z-index: 1000;
+}

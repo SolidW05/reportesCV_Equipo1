@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inicio De Sesion</title>
+  <link rel="stylesheet" href="/css/stylesLgn.css" />
+</head>
+<body>
+<div class="container">
+  <div class="container-form">
+    <form class="sign-in" method="post" action="/login">
+      <h2>Iniciar sesion</h2>
+      <div class="social-networks">
+        <ion-icon name="logo-twitter" style="color: aqua"></ion-icon>
+        <ion-icon name="logo-facebook" style="color: blue"></ion-icon>
+        <ion-icon name="logo-instagram" style="color: orchid"></ion-icon>
+        <ion-icon name="logo-tiktok" style="color: black"></ion-icon>
+      </div>
+      <span>Use su correo y contraseña</span>
+      <div class="container-input">
+        <ion-icon name="mail-outline"></ion-icon>
+        <input type="text" placeholder="Email" name="username" required />
+      </div>
+      <div class="container-input">
+        <ion-icon name="lock-closed-outline"></ion-icon>
+        <input
+                id="password"
+                type="password"
+                placeholder="password"
+                name="password"
+                required
+        />
+      </div>
+      <a href="/recuperar">¿Olvidaste tu contraseña?</a>
+      <button class="button" type="submit">Iniciar Sesion</button>
+      <button
+              onclick="window.location.href='/'"
+              class="button"
+              id="regresar"
+      >
+        Regresar
+      </button>
+    </form>
+  </div>
+
+  <div class="container-form">
+    <form id="formRegistro" >
+      <h2>Registrarse</h2>
+      <div class="social-networks">
+        <ion-icon name="logo-twitter" style="color: aqua"></ion-icon>
+        <ion-icon name="logo-facebook" style="color: blue"></ion-icon>
+        <ion-icon name="logo-instagram" style="color: orchid"></ion-icon>
+        <ion-icon name="logo-tiktok" style="color: black"></ion-icon>
+      </div>
+      <span>Use su correo electronico para registrarse</span>
+      <div class="container-input">
+        <ion-icon name="people-outline"></ion-icon>
+        <select name="tipoUsuario" required>
+          <option value="" disabled selected>Seleccione su tipo</option>
+          <option value="dependencia">Dependencia</option>
+          <option value="usuario">Usuario</option>
+        </select>
+      </div>
+      <div class="container-input">
+        <ion-icon name="person-outline"></ion-icon>
+        <input type="text" id="nombre" name="nombre" placeholder="User" required />
+      </div>
+      <div class="container-input">
+        <ion-icon name="mail-outline"></ion-icon>
+        <input type="text" id="email" name="email" placeholder="Email" required />
+      </div>
+      <div class="container-input">
+        <ion-icon name="lock-closed-outline"></ion-icon>
+        <input type="password" id="passwordC" name="password" placeholder="password" required />
+      </div>
+      <button class="button" type="submit">Registrarse</button>
+      <div id="registro-exitoso" class="mensaje-exito">
+        Registro exitoso
+      </div>
+    </form>
+  </div>
+
+  <div class="container-welcome">
+    <div class="welcome-sign-up welcome">
+      <h3>Bienvenido</h3>
+      <p>Ingrese sus datos personales para usar las funciones del sitio</p>
+      <button class="button" id="btn-sign-up">Registrarse</button>
+    </div>
+    <div class="welcome-sign-in welcome">
+      <h3>Hola</h3>
+      <p>
+        Registrese con sus datos personales para usar todas las funciones
+        del sitio
+      </p>
+      <button class="button" id="btn-sign-in">Iniciar Sesion</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/scriptLgn.js"></script>
+<script
+        type="module"
+        src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
+></script>
+<script
+        nomodule
+        src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"
+></script>
+</body>
+</html>

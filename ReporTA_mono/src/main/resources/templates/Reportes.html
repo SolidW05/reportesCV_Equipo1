@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Info</title>
+    <link rel="stylesheet" href="css/stylePgs.css" />
+    <link rel="stylesheet" href="css/stylePopup.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <!-- Leaflet CSS y JS -->
+    <link rel="stylesheet" href="css/leaflet.css" />
+
+
+    <!-- Geocoder para buscar direcciones -->
+    <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"
+    />
+
+  </head>
+  <body th:data-id="${usuario.id}">
+    <header>
+      <nav class="navbar section-content">
+        <a href="#" class="nav-logo">
+          <h2 class="logo-text">Reportes</h2>
+        </a>
+        <ul class="nav-menu">
+          <button id="menu-close-button" class="fas fa-times"></button>
+          <li class="nav-item">
+            <a href="#contact" class="nav-link">Reporte</a>
+          </li>
+        </ul>
+        <button id="menu-open-button" class="fas fa-bars"></button>
+      </nav>
+    </header>
+    <main>
+      <section class="hero-section">
+        <div class="section-content">
+          <div class="hero-details">
+            <h2 class="title" th:text="'Hola, ' + ${usuario.nombre}">></h2>
+            <h3 class="subtitle">Comienza A reportar</h3>
+            <p class="description">
+              Cada reporte se mostrara en este apartado, y podras ver en que
+              estado se encuentra mediante una tabla generada por la pagina.
+            </p>
+          </div>
+          <div class="hero-image-wrapper">
+            <img src="images/RCP copy.png" alt="hero" class="hero-imagen" />
+          </div>
+        </div>
+      </section>
+      <!-- Tabla de todos los reportes -->
+      <section id="tabla-todos-reportes" class="section-content">
+        <h2 class="section-title">Todos los Reportes</h2>
+        <div class="table-responsive table-usuario">
+          <table id="tabla-todos" class="reporte-tabla">
+            <thead>
+              <tr>
+                <th>ID Reporte</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Calle</th>
+                <th>Número</th>
+                <th>Colonia</th>
+                <th>Municipio</th>
+                <th>C.P.</th>
+                <th>Autoridad</th>
+                <th>Servicio</th>
+                <th>Encargado</th>
+                <th>Teléfono</th>
+              </tr>
+            </thead>
+            <tfoot>
+              <tr>
+                <th></th> <!-- ID Reporte -->
+                <th></th> <!-- Fecha -->
+                <th>
+                  Estado:
+                  <select id="filtro-estado-todos">
+                    <option value="">Todos</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Revision">Revision</option>
+                    <option value="Proceso">Proceso</option>
+                    <option value="Terminado">Terminado</option>
+                  </select>
+                </th>
+                <th></th> <!-- Calle -->
+                <th></th> <!-- Número -->
+                <th></th> <!-- Colonia -->
+                <th>
+                  <input type="text" id="filtro-municipio-todos" placeholder="Buscar municipio">
+                </th>
+                <th></th> <!-- C.P. -->
+                <th></th> <!-- Autoridad -->
+                <th>
+                  <input type="text" id="filtro-servicio-todos" placeholder="Buscar servicio">
+                </th>
+                <th></th> <!-- Encargado -->
+                <th></th> <!-- Teléfono -->
+              </tr>
+            </tfoot>
+            <tbody>
+              
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <!-- formulario Section -->
+      <section class="contact-section" id="contact">
+        <h2 class="section-title">Reporte</h2>
+        <div class="section-content">
+          <form id="formulario-reporte" action="#" class="contact-form formulario-servicio" method="post">
+            <label for="Tipo">Tipo de problema:</label>
+            <select id="servicio" class="form-input servicio" required>
+              <option value="">Seleccione el tipo</option>
+            </select>
+            <label for="Tipo">municipio</label>
+            <select name="" id="municipio" class="form-input municipio" required>
+              <option value="">Seleccione el municipio</option>
+            </select>
+            <label for="Tipo">Autoridad</label>
+            <select name="" id="autoridad" class="form-input autoridad" disabled required>
+              <option value="">Seleccione la autoridad</option>
+            </select>
+            <label for="Fecha">Fecha</label>
+            <input
+              type="date"
+              name="fecha"
+              id="fecha"
+              placeholder="Fecha"
+              class="form-input"
+              required
+            />
+            <label for="colonia">Colonia:</label>
+            <input
+              type="text"
+              name="colonia"
+              id="colonia"
+              placeholder="Colonia"
+              class="form-input"
+              required
+            />
+            <label for="calle">Calle: </label>
+            <input
+              type="text"
+              name="calle"
+              id="calle"
+              placeholder="Calle"
+              class="form-input"
+              required
+            />
+            <label for="numero">Numero: </label>
+            <input
+              type="text"
+              name="numero"
+              id="numero"
+              placeholder="numero"
+              class="form-input"
+              required
+            />
+            <label for="codigoPostal">Codigo Postal: </label>
+            <input
+              type="text"
+              name="codigoPostal"
+              id="codigoPostal"
+              placeholder="codigo postal"
+              class="form-input"
+              pattern="[0-9]+"
+              inputmode="numeric"
+              required
+            />
+            <label for="detalles">Descripcion</label>
+            <textarea
+              class="form-input"
+              name="Detalles"
+              id="descripcion"
+              placeholder="detalles"
+            ></textarea>
+            <h2>Selecciona una ubicación en el mapa</h2>
+            <div id="map" style="height: 400px; width: 100%; margin: 20px 0;"></div>
+
+            <!-- Coordenadas ocultas -->
+            <input type="hidden" id="latitud" name="latitud" />
+            <input type="hidden" id="longitud" name="longitud" />
+
+
+
+            <button type="submit" class="submit-button">Enviar</button>
+          </form>
+        </div>
+      </section>
+      <!-- Creacion de popups -->
+       <dialog data-modal class="popup" id="popup-eliminar">
+        <div class="popup-header">
+          <div class="popup-title">Eliminar Reporte</div>
+          <button data-close-button class="popup-close">&times;</button>
+        </div>
+
+        <div class="popup-content">
+          <p class="popup-message" id="popup-message">
+          </p>
+        </div>
+        <div style="display: flex;
+          justify-content: flex-end;
+          gap: 15px;">
+          <button data-close-button class="btn-cancelar" >Cancelar</button>
+          <button id="eliminar-reporte" class="btn-eliminar">Eliminar</button>
+        </div>
+
+       </dialog>
+
+       <dialog data-modal class="popup" id="popup-crear">
+        <div class="popup-header">
+          <div class="popup-title">Reporte Creado</div>
+          <button data-close-button class="popup-close">&times;</button>
+        </div>
+
+        <div class="popup-content">
+          <p class="popup-message" id="popup-message-crear">
+          </p>
+        </div>
+        <div style="display: flex;
+          justify-content: flex-end;
+          gap: 15px;">
+          <button data-close-button class="btn-eliminar">Cerrar</button>
+        </div>
+
+       </dialog>
+
+       <dialog data-modal class="popup" id="popup-actualizar">
+        <div class="popup-header">
+          <div class="popup-title">Reporte actualizado</div>
+          <button data-close-button class="popup-close">&times;</button>
+        </div>
+
+        <div class="popup-content">
+          <p class="popup-message" id="popup-message-actualizar">
+          </p>
+        </div>
+        <div style="display: flex;
+          justify-content: flex-end;
+          gap: 15px;">
+          <button data-close-button class="btn-eliminar">Cerrar</button>
+        </div>
+
+       </dialog>
+
+       <dialog data-modal class="popup" id="popup-eliminar-respuesta">
+        <div class="popup-header">
+          <div class="popup-title">Reporte eliminado</div>
+          <button data-close-button class="popup-close">&times;</button>
+        </div>
+
+        <div class="popup-content">
+          <p class="popup-message" id="popup-message">
+          </p>
+        </div>
+        <div style="display: flex;
+          justify-content: flex-end;
+          gap: 15px;">
+          <button data-close-button class="btn-cancelar" >Cancelar</button>
+        </div>
+
+       </dialog>
+      <!-- Tabla de reportes generados -->
+      <section id="tabla-reporte" style="display: none" class="section-content">
+        <h2 class="section-title">Reportes Generados</h2>
+        <table id="tabla-dinamica" class="reporte-tabla">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Municipio</th>
+              <th>Autoridad</th>
+              <th>Fecha</th>
+              <th>Colonia</th>
+              <th>Calle</th>
+              <th>Detalles</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+      <!-- Tabla de reportes del usuario -->
+      <section id="tabla-usuario-reportes" class="section-content">
+        <h2 class="section-title">Mis Reportes</h2>
+        <div class="table-responsive table-usuario">
+          <table id="tabla-usuario" class="reporte-tabla">
+            <thead>
+              <tr>
+                <th>Acciones</th>
+                <th>ID Reporte</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Calle</th>
+                <th>Número</th>
+                <th>Colonia</th>
+                <th>Municipio</th>
+                <th>C.P.</th>
+                <th>Autoridad</th>
+                <th>Servicio</th>
+                <th>Encargado</th>
+                <th>Teléfono</th>
+              </tr>
+            </thead>
+            <tfoot>
+              <tr>
+                <th></th>
+                <th></th> <!-- ID Reporte -->
+                <th></th> <!-- Fecha -->
+                <th>
+                  Estado:
+                  <select id="filtro-estado-usuario">
+                    <option value="">Todos</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Revision">Revision</option>
+                    <option value="Proceso">Proceso</option>
+                    <option value="Terminado">Terminado</option>
+                  </select>
+                </th>
+                <th></th> <!-- Calle -->
+                <th></th> <!-- Número -->
+                <th></th> <!-- Colonia -->
+                <th>
+                  <input type="text" id="filtro-municipio-usuario" placeholder="Buscar municipio">
+                </th>
+                <th></th> <!-- C.P. -->
+                <th></th> <!-- Autoridad -->
+                <th>
+                  <input type="text" id="filtro-servicio-usuario" placeholder="Buscar servicio">
+                </th>
+                <th></th> <!-- Encargado -->
+                <th></th> <!-- Teléfono -->
+              </tr>
+            </tfoot>
+            <tbody>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section class="contact-section" id="actualizacion" style="display: none;">
+        <h2 class="section-title">Reporte</h2>
+        <div class="section-content">
+          <form id="formulario-actualizacion" action="#" class="contact-form formulario-servicio" method="post" >
+            <label for="Tipo">Tipo de problema:</label>
+            <select id="servicio-act" class="form-input servicio" required>
+              <option value="">Seleccione el tipo</option>
+            </select>
+            <label for="Tipo">municipio</label>
+            <select name="" id="municipio-act" class="form-input municipio" required>
+              <option value="">Seleccione el municipio</option>
+            </select>
+            <label for="Tipo">Autoridad</label>
+            <select name="" id="autoridad-act" class="form-input autoridad" disabled required>
+              <option value="">Seleccione la autoridad</option>
+            </select>
+            <label for="Fecha">Fecha</label>
+            <input
+              type="date"
+              name="fecha"
+              id="fecha-act"
+              placeholder="Fecha"
+              class="form-input"
+              required
+            />
+            <label for="colonia">Colonia:</label>
+            <input
+              type="text"
+              name="colonia"
+              id="colonia-act"
+              placeholder="Colonia"
+              class="form-input"
+              required
+            />
+            <label for="calle">Calle: </label>
+            <input
+              type="text"
+              name="calle"
+              id="calle-act"
+              placeholder="Calle"
+              class="form-input"
+              required
+            />
+            <label for="numero">Numero: </label>
+            <input
+              type="text"
+              name="numero"
+              id="numero-act"
+              placeholder="numero"
+              class="form-input"
+              required
+            />
+            <label for="codigoPostal">Codigo Postal: </label>
+            <input
+              type="text"
+              name="codigoPostal"
+              id="codigoPostal-act"
+              placeholder="codigo postal"
+              class="form-input"
+              pattern="[0-9]+"
+              inputmode="numeric"
+              required
+            />
+            <label for="detalles">Descripcion</label>
+            <textarea
+              class="form-input"
+              name="Detalles"
+              id="descripcion-act"
+              placeholder="detalles"
+            ></textarea>
+            <div id="map2" style="height: 400px; width: 100%; margin: 20px 0;"></div>
+            <input type="hidden" id="latitud-act" name="latitud" />
+            <input type="hidden" id="longitud-act" name="longitud" />
+
+            <button type="submit" class="submit-button">Enviar</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="footer-section">
+        <div class="section-content">
+          <p class="copyright-text">Centro Universitario De Tonala</p>
+          <div class="social-link-list">
+            <p>www.pagina.com</p>
+          </div>
+          <p class="policy-text">
+            <a href="#" class="policy-link">Telefono</a>
+            <span class="separator">.</span>
+            <a href="#" class="policy-link">Correo</a>
+          </p>
+        </div>
+      </footer>
+    </main>
+    <script>
+      const popup = document.querySelectorAll("[data-modal]");
+
+      document.querySelectorAll("[data-close-button]").forEach(button => {
+        button.addEventListener("click", () => {
+        popup.forEach(popup => {
+            popup.close();
+          });
+        });
+      });
+    </script>
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    <script src="js/scriptActualizarReporte.js"></script>
+    <script src="js/mapaUbicacion2.js"></script>
+    <script type="module" src="js/scriptGetReportes.js"></script>
+    <script src="js/scriptGetMunicipios.js"></script>
+    <script src="js/scriptGetAutoridades.js"></script>
+    <script src="js/scriptGetServicios.js"></script>
+    <script type="module" src="js/scripTablas.js"></script>
+    <script src="js/scriptPostReporte.js"></script>
+    <script src="js/mapaUbicacion.js"></script>
+    <script src="js/scriptPgs.js"></script>
+
+
+    <!-- Leaflet -->
+    <script src="js/leaflet.js"></script>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Geocoder -->
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+
+  </body>
+</html>
