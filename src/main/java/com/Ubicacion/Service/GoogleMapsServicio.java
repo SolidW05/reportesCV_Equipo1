@@ -1,6 +1,5 @@
 package com.Ubicacion.Service;
 
-
 import com.Ubicacion.Dtos.GeocodigoInversoR;
 import com.Ubicacion.Models.Ubicacion;
 import com.Ubicacion.Repository.UbicacionRepositorio;
@@ -12,7 +11,6 @@ import com.google.maps.model.GeocodingResult;
 import com.google.maps.model.LatLng;
 import com.Ubicacion.Exeption.GeoExeption;
 import com.Ubicacion.Dtos.ReenvioGeocodigoR;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,15 +38,19 @@ public class GoogleMapsServicio {
                 );
             }
 
-            GeocodingResult resultado = results[0];
-
-            // 1. Construimos la entidad para guardar en BD
             Ubicacion ubicacion = new Ubicacion();
             ubicacion.setLatitud(latitud);
             ubicacion.setLongitud(longitud);
+
+            String locality       = null;
+            String adminLevel2    = null;
+            String codigoPostal   = null;
+            String colonia        = null;
+
+            // --- primer resultado: calle, número, cp, estado, país ---
+            GeocodingResult resultado = results[0];
             ubicacion.setDireccionCompleta(resultado.formattedAddress);
 
-            //  componentes de Google Maps
             for (AddressComponent componente : resultado.addressComponents) {
                 for (AddressComponentType tipo : componente.types) {
                     switch (tipo) {
@@ -57,13 +59,14 @@ public class GoogleMapsServicio {
                         case STREET_NUMBER ->
                                 ubicacion.setNumero(componente.longName);
                         case SUBLOCALITY_LEVEL_1, NEIGHBORHOOD -> {
-                            if (ubicacion.getColonia() == null)
-                                ubicacion.setColonia(componente.longName);
+                            if (colonia == null) colonia = componente.longName;
                         }
                         case POSTAL_CODE ->
-                                ubicacion.setCodigoPostal(componente.longName);
+                                codigoPostal = componente.longName;
                         case LOCALITY ->
-                                ubicacion.setMunicipio(componente.longName);
+                                locality = componente.longName;
+                        case ADMINISTRATIVE_AREA_LEVEL_2 ->
+                                adminLevel2 = componente.longName;
                         case ADMINISTRATIVE_AREA_LEVEL_1 ->
                                 ubicacion.setEstado(componente.longName);
                         case COUNTRY ->
@@ -73,10 +76,56 @@ public class GoogleMapsServicio {
                 }
             }
 
-            // 3.guarda en bd y obtenemos el ID generado
+            ubicacion.setCodigoPostal(codigoPostal);
+            ubicacion.setColonia(colonia);
+
+            // --- buscar municipio en TODOS los resultados que devuelve Google ---
+            for (GeocodingResult r : results) {
+                for (AddressComponent componente : r.addressComponents) {
+                    for (AddressComponentType tipo : componente.types) {
+                        if (tipo == AddressComponentType.ADMINISTRATIVE_AREA_LEVEL_2) {
+                            adminLevel2 = componente.longName;
+                            break;
+                        }
+                    }
+                }
+                if (adminLevel2 != null) break;
+            }
+
+            // Si ningún resultado trajo administrative_area_level_2
+            // hacemos una segunda búsqueda por código postal
+            if (adminLevel2 == null && codigoPostal != null) {
+                GeocodingResult[] resultsCp = GeocodingApi
+                        .geocode(geoApiContext, codigoPostal + " Jalisco México")
+                        .language("es")
+                        .await();
+
+                if (resultsCp != null) {
+                    for (GeocodingResult r : resultsCp) {
+                        for (AddressComponent componente : r.addressComponents) {
+                            for (AddressComponentType tipo : componente.types) {
+                                if (tipo == AddressComponentType.ADMINISTRATIVE_AREA_LEVEL_2) {
+                                    adminLevel2 = componente.longName;
+                                    break;
+                                }
+                            }
+                        }
+                        if (adminLevel2 != null) break;
+                    }
+                }
+            }
+
+            // Asignamos el municipio con la mejor fuente disponible
+            if (adminLevel2 != null) {
+                ubicacion.setMunicipio(adminLevel2);
+            } else if (locality != null) {
+                ubicacion.setMunicipio(locality);
+            }
+
+            // Guardamos en BD
             Ubicacion guardada = ubicacionRepositorio.save(ubicacion);
 
-            // DTo
+            // Mapeamos a DTO
             GeocodigoInversoR dto = new GeocodigoInversoR();
             dto.setId(guardada.getId());
             dto.setLatitud(guardada.getLatitud());
@@ -98,6 +147,7 @@ public class GoogleMapsServicio {
             throw new GeoExeption("Error al llamar a Google Maps API: " + e.getMessage(), e);
         }
     }
+
     public ReenvioGeocodigoR forwardGeocode(String query) {
         try {
             GeocodingResult[] results = GeocodingApi
@@ -116,24 +166,38 @@ public class GoogleMapsServicio {
             dto.setLongitud(resultado.geometry.location.lng);
             dto.setDireccionCompleta(resultado.formattedAddress);
 
-            for (AddressComponent componente : resultado.addressComponents) {
-                for (AddressComponentType tipo : componente.types) {
-                    switch (tipo) {
-                        case LOCALITY ->
-                                dto.setMunicipio(componente.longName);
-                        case ADMINISTRATIVE_AREA_LEVEL_1 ->
-                                dto.setEstado(componente.longName);
-                        default -> { }
+            String locality    = null;
+            String adminLevel2 = null;
+
+            for (GeocodingResult r : results) {
+                for (AddressComponent componente : r.addressComponents) {
+                    for (AddressComponentType tipo : componente.types) {
+                        switch (tipo) {
+                            case LOCALITY ->
+                                    locality = componente.longName;
+                            case ADMINISTRATIVE_AREA_LEVEL_2 ->
+                                    adminLevel2 = componente.longName;
+                            case ADMINISTRATIVE_AREA_LEVEL_1 ->
+                                    dto.setEstado(componente.longName);
+                            default -> { }
+                        }
                     }
                 }
+                if (adminLevel2 != null) break;
+            }
+
+            if (adminLevel2 != null) {
+                dto.setMunicipio(adminLevel2);
+            } else if (locality != null) {
+                dto.setMunicipio(locality);
             }
 
             return dto;
 
-        } catch (GeoExeption  e) {
+        } catch (GeoExeption e) {
             throw e;
         } catch (Exception e) {
-                throw new GeoExeption("Error al llamar a Google Maps API: " + e.getMessage(), e);
+            throw new GeoExeption("Error al llamar a Google Maps API: " + e.getMessage(), e);
         }
     }
 }
