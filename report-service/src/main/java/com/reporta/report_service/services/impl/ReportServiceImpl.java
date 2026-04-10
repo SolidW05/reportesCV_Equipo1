@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.reporta.report_service.config.UbicacionClient;
 import com.reporta.report_service.exceptions.NotFoundObjectException;
 import com.reporta.report_service.models.dto.ReportCreateDto;
 import com.reporta.report_service.models.dto.ReportResponseDto;
@@ -25,6 +26,9 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private ImageStorageService imageStorageService;
+
+    @Autowired
+    private UbicacionClient ubicacionClient;
 
     @Override
     public ReportResponseDto guardarReporte(ReportCreateDto report, MultipartFile image) {
@@ -121,9 +125,10 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public List<ReportResponseDto> obtenerPorMunicipio(String municipio) {
-        // Todo: Implementar logica para obtener reportes por
-        // municipio utilizando restTemplate
-        return null;
+        List<Long> idsUbicacion = ubicacionClient.obtenerIdsPorMunicipio(municipio);
+        List<Report> reports = reportRepository.findByIdLocationIn(idsUbicacion);
+        return reports.stream().map(this::mapToDto).toList();
+        
     }
 
     private ReportResponseDto mapToDto(Report report) {

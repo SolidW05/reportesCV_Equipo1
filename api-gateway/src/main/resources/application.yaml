@@ -17,6 +17,23 @@ spring:
               uri: lb://report-service
               predicates:
                 - Path=/api/report/**
+            - id: locations-service
+              uri: lb://ubicacion
+              predicates:
+                - Path=/api/ubicacion/**
+            - id: authorities-service
+              uri: lb://autoridades-service
+              predicates:
+                - Path=/api/autoridad/**
+            - id: users-service-users
+              uri: lb://userservice
+              predicates:
+                - Path=/api/users/**
+            - id: users-service-auth
+              uri: lb://userservice
+              predicates:
+                - Path=/api/auth/**
+                
 
 eureka:
   client:

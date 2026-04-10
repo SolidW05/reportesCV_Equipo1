@@ -10,4 +10,6 @@ import com.reporta.report_service.models.entity.Report;
 @Repository
 public interface ReportRepository extends JpaRepository<Report, Long>{
     List<Report> findByIdUser(Long idUser);
+
+    List<Report> findByIdLocationIn(List<Long> idsUbicacion);
 }

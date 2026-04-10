@@ -2,6 +2,7 @@ package com.reporta.report_service.controllers;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.reporta.report_service.models.dto.ReportCreateDto;
@@ -39,6 +40,7 @@ public class ReportController {
         return ResponseEntity.ok(reportService.obtenerReportesPorUsuario(id));
     }
 
+    
     @GetMapping("/{id}")
     public ResponseEntity<ReportResponseDto> obtenerDetalleReporte(@PathVariable Long id) {
         return ResponseEntity.ok(reportService.obtenerReportePorId(id));

@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "UserServiceApplication",
+            "request": "launch",
+            "mainClass": "com.example.UserService.UserServiceApplication",
+            "projectName": "UserService"
+        },
+        {
+            "type": "java",
             "name": "ApiGatewayApplication",
             "request": "launch",
             "mainClass": "com.reporta.api_gateway.ApiGatewayApplication",
@@ -43,6 +50,27 @@
             "cwd": "${workspaceFolder}",
             "mainClass": "com.test.api_gateway.ApiGatewayApplication",
             "projectName": "api-gateway",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-Application<ubicacion-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.Ubicacion.Application",
+            "projectName": "ubicacion-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=63925 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=ubicacion-service"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-AutoridadesServiceApplication<autoridades-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.proyecto.autoridades_service.AutoridadesServiceApplication",
+            "projectName": "autoridades-service",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
         }
