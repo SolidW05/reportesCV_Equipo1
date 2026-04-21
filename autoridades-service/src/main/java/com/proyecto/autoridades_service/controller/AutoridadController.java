@@ -1,6 +1,7 @@
 package com.proyecto.autoridades_service.controller;
 
 import com.proyecto.autoridades_service.dto.AutoridadRequest;
+import com.proyecto.autoridades_service.dto.AutoridadResponse;
 import com.proyecto.autoridades_service.model.Autoridad;
 import com.proyecto.autoridades_service.service.AutoridadService;
 import jakarta.validation.Valid;
@@ -32,7 +33,8 @@ public class AutoridadController {
         return ResponseEntity.ok(actualizada);
     }
     @GetMapping("/usuario/{idUsuario}")
-    public ResponseEntity<Autoridad> obtenerPorIdUsuario(@PathVariable Integer idUsuario) {
+    public ResponseEntity<AutoridadResponse> obtenerPorIdUsuario(@PathVariable Integer idUsuario) {
         return ResponseEntity.ok(autoridadService.obtenerPorIdUsuario(idUsuario));
     }
+    //agregar un patch
 }
