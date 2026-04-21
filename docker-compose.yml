@@ -1,0 +1,131 @@
+services:
+  mysql-report-service:
+    image: mysql:8
+    container_name: mysql-report
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: report_service
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p1234"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgresql-location-service:
+    image: postgres:13
+    container_name: postgresql-location
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: location_service
+    volumes:
+      - ./location_service/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgresql_location_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]      
+      interval: 10s
+      timeout: 30s
+      retries: 5
+  
+  postgresql-user-service:
+    image: postgres:13
+    container_name: postgresql-user
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: user_service
+    volumes:
+      - ./user_service/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgresql_user_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]      
+      interval: 10s
+      timeout: 30s
+      retries: 5
+
+  location-service:
+    build: ./location_service/
+    container_name: location-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_APPLICATION_NAME: ubicacion
+      SERVER_PORT: 8084
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql-location:5432/location_service
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: true
+      EUREKA_CLIENT_FETCH_REGISTRY: true
+    depends_on:
+      postgresql-location-service:
+        condition: service_healthy
+
+  report-service:
+    build: ./report-service/
+    container_name: report-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_APPLICATION_NAME: report-service
+      SERVER_ADDRESS: 0.0.0.0
+      SERVER_PORT: 8083
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-report:3306/report_service
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 1234
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_HIBERNATE_NAMING_PHYSICAL_STRATEGY: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: true
+      EUREKA_CLIENT_FETCH_REGISTRY: true
+      FILE_UPLOADS_DIR: uploads/images
+    volumes:
+      - uploads_images:/app/uploads/images
+    depends_on:
+      mysql-report-service:
+        condition: service_healthy
+  
+  api-gateway:
+    build: ./api-gateway/
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_APPLICATION_NAME: api-gateway
+      SERVER_PORT: 8080
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: true
+      EUREKA_CLIENT_FETCH_REGISTRY: true
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+  
+  eureka-server:
+    build: ./eureka-server/
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    environment:
+      SPRING_APPLICATION_NAME: eureka-server
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8761 || exit 1"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+      
+
+volumes:
+  mysql_data:
+  uploads_images:
+  postgresql_location_data:
+  postgresql_user_data:
