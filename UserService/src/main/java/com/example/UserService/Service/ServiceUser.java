@@ -59,4 +59,16 @@ public class ServiceUser implements UserDetailsService {
             return true;
         }return false;
     }
+
+    public Long cambiarTipoUsuario(String email){
+        User user = respositoryUser.findByEmail(email)
+                .orElseThrow(() -> new UsuarioNoEncontradoException(email));
+        if (user.getTipoUser() == User.TipoUsuario.usuario){
+            user.setTipoUser(User.TipoUsuario.autoridad);
+        } else {
+            user.setTipoUser(User.TipoUsuario.usuario);
+        }
+        respositoryUser.save(user);
+        return user.getId();
+    }
 }

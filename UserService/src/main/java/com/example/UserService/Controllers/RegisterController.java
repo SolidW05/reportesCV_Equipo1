@@ -30,6 +30,11 @@ public class RegisterController {
         return "Cuenta verificada correctamente";
 
     }
+
+    @PatchMapping("/cambiar-tipo/{email}")
+    public Long cambiarTipoUsuario(@PathVariable String email) {
+        return serviceUser.cambiarTipoUsuario(email);
+    }
 }
 
 

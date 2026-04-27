@@ -9,7 +9,7 @@ import lombok.Data;
 public class Municipio {
 
     @Id
-    @Column(name = "idMunicipio")
+    @Column(name = "id_municipio")
     private Integer idMunicipio;
 
     @Column(name = "municipio")

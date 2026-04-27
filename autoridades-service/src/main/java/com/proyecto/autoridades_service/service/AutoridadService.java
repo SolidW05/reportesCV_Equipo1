@@ -1,9 +1,12 @@
 package com.proyecto.autoridades_service.service;
 
+import com.proyecto.autoridades_service.config.UserClient;
 import com.proyecto.autoridades_service.dto.AutoridadRequest;
 import com.proyecto.autoridades_service.model.Autoridad;
 import com.proyecto.autoridades_service.repository.AutoridadRepository;
 import com.proyecto.autoridades_service.repository.MunicipioRepository;
+
+import jakarta.persistence.criteria.CriteriaBuilder.In;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,11 +18,15 @@ public class AutoridadService {
     private AutoridadRepository autoridadRepository;
 
     @Autowired
+    private UserClient userClient;
+
+    @Autowired
     private MunicipioService municipioService;
 
     public Autoridad crearAutoridad(AutoridadRequest request) {
         Autoridad autoridad = new Autoridad();
-        autoridad.setIdUsuario(request.getIdUsuario());
+        Integer idUsuario = userClient.cambiarTipoUsuario(request.getEmail()).intValue();
+        autoridad.setIdUsuario(idUsuario);
         autoridad.setTelefono(request.getTelefono());
         if (!municipioService.existeMunicipio(request.getMunicipio())) {
             throw new RuntimeException("Municipio no encontrado");

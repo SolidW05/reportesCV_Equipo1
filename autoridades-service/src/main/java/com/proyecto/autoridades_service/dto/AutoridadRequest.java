@@ -8,10 +8,9 @@ import lombok.Data;
 @Data
 public class AutoridadRequest {
 
-    @NotNull(message = "El ID del usuario es obligatorio")
-    private Integer idUsuario;
+    @NotNull(message = "El email del usuario es obligatorio")
+    private String email;
 
-    @NotBlank(message = "El teléfono es obligatorio")
     @Size(min = 10, max = 10)
     private String telefono;
 

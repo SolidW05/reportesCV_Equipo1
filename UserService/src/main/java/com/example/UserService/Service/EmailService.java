@@ -1,6 +1,13 @@
 package com.example.UserService.Service;
 
 import jakarta.mail.internet.MimeMessage;
+
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -25,7 +32,7 @@ public class EmailService {
     public void sendEmail(String email, String token,String subject, String path, String message){
         try{
             //La ip se tiene que estar cambiando para que funcione
-            String actionUrl = "http://192.168.1.86:8080" + path + "?token=" + token;
+            String actionUrl = "http://" + getCurrentIp() + ":8080" + path + "?token=" + token;
             String content = """
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border-radius: 8px; background-color: #f9f9f9; text-align: center;">
             <h2 style="color: #333;">%s</h2>
@@ -46,6 +53,29 @@ public class EmailService {
         } catch (Exception e) {
             System.err.println("Failed to send email: " + e.getMessage());
         }
+    }
+
+    private String getCurrentIp() {
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface ni = interfaces.nextElement();
+                Enumeration<InetAddress> addresses = ni.getInetAddresses();
+
+                while (addresses.hasMoreElements()) {
+                    InetAddress addr = addresses.nextElement();
+
+                    if (!addr.isLoopbackAddress() && addr instanceof Inet4Address) {
+                        return addr.getHostAddress();
+                    }
+                }
+            }
+
+        } catch (SocketException e) {
+            System.err.println("Error getting network interfaces: " + e.getMessage());
+        }
+        return "localhost"; // Fallback to localhost if IP retrieval fails
     }
 
 }

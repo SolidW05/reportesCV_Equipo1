@@ -43,13 +43,50 @@ services:
       POSTGRES_PASSWORD: 1234
       POSTGRES_DB: user_service
     volumes:
-      - ./user_service/init.sql:/docker-entrypoint-initdb.d/init.sql
       - postgresql_user_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]      
       interval: 10s
       timeout: 30s
       retries: 5
+  
+  mysql-autoridades-service:
+    image: mysql:8
+    container_name: mysql-autoridades
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: autoridades_service
+    volumes:
+      - ./autoridades-service/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - mysql_autoridades_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p1234"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  autoridades-service:
+    build: ./autoridades-service/
+    container_name: autoridades-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_APPLICATION_NAME: autoridades-service
+      SERVER_PORT: 8082
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-autoridades:3306/autoridades_service
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 1234
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_HIBERNATE_NAMING_PHYSICAL_STRATEGY: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: true
+      EUREKA_CLIENT_FETCH_REGISTRY: true
+    depends_on:
+      mysql-autoridades-service:
+        condition: service_healthy
 
   location-service:
     build: ./location_service/
@@ -94,6 +131,24 @@ services:
       mysql-report-service:
         condition: service_healthy
   
+  user-service:
+    build: ./UserService/
+    container_name: user-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_APPLICATION_NAME: user-service
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql-user:5432/user_service
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1234
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: true
+      EUREKA_CLIENT_FETCH_REGISTRY: true
+    depends_on:
+      postgresql-user-service:
+        condition: service_healthy
+  
   api-gateway:
     build: ./api-gateway/
     container_name: api-gateway
@@ -129,3 +184,4 @@ volumes:
   uploads_images:
   postgresql_location_data:
   postgresql_user_data:
+  mysql_autoridades_data:
