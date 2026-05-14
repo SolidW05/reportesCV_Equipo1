@@ -1,6 +1,7 @@
 package com.proyecto.autoridades_service.service;
 
 import com.proyecto.autoridades_service.config.UserClient;
+import com.proyecto.autoridades_service.dto.AutoridadDetailsDto;
 import com.proyecto.autoridades_service.dto.AutoridadRequest;
 import com.proyecto.autoridades_service.model.Autoridad;
 import com.proyecto.autoridades_service.repository.AutoridadRepository;
@@ -48,11 +49,16 @@ public class AutoridadService {
         return autoridadRepository.save(autoridad);
     }
 
-
-    public Autoridad obtenerPorIdUsuario(Integer idUsuario) {
-        return autoridadRepository.findByIdUsuario(idUsuario)
+    public AutoridadDetailsDto obtenerPorIdUsuario(Integer idUsuario) {
+        Autoridad autoridad = autoridadRepository.findByIdUsuario(idUsuario)
                 .stream()
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Autoridad no encontrada"));
+        AutoridadDetailsDto dto = new AutoridadDetailsDto();
+        dto.setIdUsuario(autoridad.getIdUsuario());
+        dto.setIdAutoridad(autoridad.getIdAutoridad());
+        dto.setTelefono(autoridad.getTelefono());
+        dto.setMunicipio(municipioService.obtenerMunicipioPorId(autoridad.getMunicipioId()));
+        return dto;
     }
 }

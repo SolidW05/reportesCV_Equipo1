@@ -17,5 +17,11 @@ public class MunicipioService {
         return municipioRepository.existsById(id);
     }
 
+    public String obtenerMunicipioPorId(Integer id) {
+        return municipioRepository.findById(id)
+                .map(m -> m.getMunicipio())
+                .orElse("Municipio desconocido");
+    }
+
     
 }

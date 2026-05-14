@@ -1,6 +1,8 @@
 package com.proyecto.autoridades_service.controller;
 
 import com.proyecto.autoridades_service.dto.AutoridadRequest;
+import com.proyecto.autoridades_service.dto.AutoridadDetailsDto;
+
 import com.proyecto.autoridades_service.model.Autoridad;
 import com.proyecto.autoridades_service.service.AutoridadService;
 import jakarta.validation.Valid;
@@ -13,7 +15,6 @@ import java.util.List;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
-
 
 @RestController
 @RequestMapping("/api/autoridad")
@@ -35,8 +36,9 @@ public class AutoridadController {
         Autoridad actualizada = autoridadService.actualizarAutoridad(id, request);
         return ResponseEntity.ok(actualizada);
     }
+
     @GetMapping("/usuario/{idUsuario}")
-    public ResponseEntity<Autoridad> obtenerPorIdUsuario(@PathVariable Integer idUsuario) {
+    public ResponseEntity<AutoridadDetailsDto> obtenerPorIdUsuario(@PathVariable Integer idUsuario) {
         return ResponseEntity.ok(autoridadService.obtenerPorIdUsuario(idUsuario));
     }
 }

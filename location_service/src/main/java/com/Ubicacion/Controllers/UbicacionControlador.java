@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-
 @RestController
 @RequestMapping("/api/ubicacion")
 public class UbicacionControlador {
@@ -26,13 +25,12 @@ public class UbicacionControlador {
     @Autowired
     private UbicacionService municipioService;
 
-    @GetMapping("/reverse")
+    @PostMapping("/reverse")
     public ResponseEntity<GeocodigoInversoR> reverseGeocode(
             @RequestParam Double lat,
             @RequestParam Double lng) {
         return ResponseEntity.ok(googleMapsServicio.reverseGeocode(lat, lng));
     }
-
 
     @GetMapping("/forward")
     public ResponseEntity<ReenvioGeocodigoR> forwardGeocode(
@@ -51,7 +49,5 @@ public class UbicacionControlador {
             @PathVariable Long id) {
         return ResponseEntity.ok(municipioService.obtenerDetallesUbicacionPorId(id));
     }
-    
-
 
 }
