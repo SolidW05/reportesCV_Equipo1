@@ -1,9 +1,20 @@
 ---
+import '../styles/global.css';
+import { decodeJwt, isTokenExpired, JWT_COOKIE, ROLE_COOKIE, isUsuario, isAutoridad } from '../utils/auth';
+
 export interface Props {
   title?: string;
   description?: string;
 }
 const { title = 'ReporTA', description = 'Sistema de reportes ciudadanos' } = Astro.props;
+
+// Read JWT cookie server-side for auth-aware navigation
+const token = Astro.cookies.get(JWT_COOKIE)?.value ?? null;
+
+const payload = token ? decodeJwt(token) : null;
+const isAuth = !!payload && !isTokenExpired(payload);
+const isUserRole  = isAuth && isUsuario(payload?.tipoUser);
+const isAdminRole = isAuth && isAutoridad(payload?.tipoUser);
 ---
 
 <!doctype html>
@@ -14,7 +25,7 @@ const { title = 'ReporTA', description = 'Sistema de reportes ciudadanos' } = As
     <meta name="description" content={description} />
     <title>{title} — ReporTA</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="/src/styles/global.css" />
+    <slot name="head" />
   </head>
   <body>
 
@@ -27,10 +38,30 @@ const { title = 'ReporTA', description = 'Sistema de reportes ciudadanos' } = As
         </a>
 
         <nav class="nav-links" id="nav-menu">
-          <a href="/" class="nav-link">Inicio</a>
-          <a href="/reports" class="nav-link">Mis Reportes</a>
-          <a href="/reports/create" class="nav-link nav-cta">+ Nuevo Reporte</a>
-          <a href="/admin/reports" class="nav-link nav-admin">Admin</a>
+          {!isAuth && (
+            <>
+              <a href="/" class="nav-link">Inicio</a>
+              <a href="/login" class="nav-link nav-cta">Iniciar Sesión</a>
+              <a href="/register" class="nav-link nav-register">Registrarse</a>
+            </>
+          )}
+
+          {isUserRole && (
+            <>
+              <a href="/" class="nav-link">Inicio</a>
+              <a href="/reports" class="nav-link">Mis Reportes</a>
+              <a href="/reports/create" class="nav-link nav-cta">+ Nuevo Reporte</a>
+              <a href="/logout" class="nav-link nav-logout">Salir</a>
+            </>
+          )}
+
+          {isAdminRole && (
+            <>
+              <a href="/admin/reports" class="nav-link">Panel Admin</a>
+              <span class="nav-badge mono">{payload?.sub}</span>
+              <a href="/logout" class="nav-link nav-logout">Salir</a>
+            </>
+          )}
         </nav>
 
         <button class="hamburger" id="hamburger" aria-label="Menú" aria-expanded="false">
@@ -50,7 +81,6 @@ const { title = 'ReporTA', description = 'Sistema de reportes ciudadanos' } = As
         <span class="mono" style="color: var(--text-muted); font-size:0.8rem;">
           © 2026 ReporTA — Centro Universitario de Tonalá
         </span>
-        <span class="mono" style="color: var(--border); font-size:0.8rem;">API v1 · localhost:8083</span>
       </div>
     </footer>
 
@@ -72,12 +102,48 @@ const { title = 'ReporTA', description = 'Sistema de reportes ciudadanos' } = As
       const links = document.querySelectorAll<HTMLAnchorElement>('.nav-link');
       const path  = window.location.pathname;
       links.forEach(link => {
-        if (link.getAttribute('href') === path ||
-            (path.startsWith('/reports') && link.getAttribute('href') === '/reports' && path !== '/reports/create') ||
-            (path.startsWith('/admin')   && link.getAttribute('href') === '/admin/reports')) {
+        const href = link.getAttribute('href');
+        if (
+          href === path ||
+          (path.startsWith('/reports') && href === '/reports' && path !== '/reports/create') ||
+          (path.startsWith('/admin')   && href === '/admin/reports')
+        ) {
           link.classList.add('active');
         }
       });
+
+      // ── Toast Notification System ──
+      type ToastType = 'success' | 'error' | 'info';
+
+      function showToast(message: string, type: ToastType = 'info', duration = 3500) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.setAttribute('role', 'status');
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.classList.add('toast-exit');
+          toast.addEventListener('animationend', () => toast.remove(), { once: true });
+        }, duration);
+      }
+      (window as any).showToast = showToast;
+
+      // ── Auth cookie utils (exposed globally for component scripts) ──
+      function getJwt(): string | null {
+        const m = document.cookie.match(/(?:^|;\s*)jwt=([^;]+)/);
+        return m ? decodeURIComponent(m[1]) : null;
+      }
+      function authHeaders(extra?: Record<string, string>): Record<string, string> {
+        const token = getJwt();
+        return {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(extra ?? {}),
+        };
+      }
+      (window as any).getJwt = getJwt;
+      (window as any).authHeaders = authHeaders;
     </script>
 
   </body>
@@ -95,20 +161,8 @@ const { title = 'ReporTA', description = 'Sistema de reportes ciudadanos' } = As
   display: flex; align-items: center; justify-content: space-between;
   height: 64px;
 }
-.logo {
-  display: flex; align-items: center; gap: 0.5rem;
-  text-decoration: none;
-}
-.logo-mark {
-  font-size: 1.4rem; color: var(--accent); line-height: 1;
-}
-.logo-text {
-  font-family: var(--font-display); font-weight: 800;
-  font-size: 1.25rem; color: var(--text); letter-spacing: -0.04em;
-}
-.nav-links {
-  display: flex; align-items: center; gap: 0.25rem;
-}
+.logo { display: flex; align-items: center; gap: 0.5rem; text-decoration: none; }
+.nav-links { display: flex; align-items: center; gap: 0.25rem; }
 .nav-link {
   font-family: var(--font-display); font-weight: 600; font-size: 0.875rem;
   color: var(--text-dim); padding: 0.45rem 0.85rem; border-radius: var(--radius);
@@ -123,11 +177,20 @@ const { title = 'ReporTA', description = 'Sistema de reportes ciudadanos' } = As
   transition: background var(--transition), transform var(--transition);
 }
 .nav-cta:hover { background: var(--accent-hover); transform: translateY(-1px); }
-.nav-admin {
+.nav-register {
   color: var(--text-muted) !important; font-size: 0.8rem;
   border: 1px solid var(--border); margin-left: 0.25rem;
 }
-.nav-admin:hover { border-color: var(--accent); color: var(--accent) !important; }
+.nav-register:hover { border-color: var(--accent); color: var(--accent) !important; }
+.nav-logout {
+  color: var(--danger) !important; font-size: 0.8rem;
+  border: 1px solid rgba(239,68,68,0.2); margin-left: 0.25rem;
+}
+.nav-logout:hover { background: var(--danger-dim); border-color: var(--danger); }
+.nav-badge {
+  font-size: 0.7rem; color: var(--text-muted); padding: 0 0.5rem;
+  max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
 /* Hamburger */
 .hamburger {
@@ -156,12 +219,8 @@ const { title = 'ReporTA', description = 'Sistema de reportes ciudadanos' } = As
 }
 
 /* ── Footer ── */
-.footer {
-  border-top: 1px solid var(--border); padding: 1.5rem 0; margin-top: auto;
-}
-.footer-inner {
-  display: flex; align-items: center; justify-content: space-between;
-}
+.footer { border-top: 1px solid var(--border); padding: 1.5rem 0; margin-top: auto; }
+.footer-inner { display: flex; align-items: center; justify-content: space-between; }
 
 /* ── Toast Container ── */
 #toast-container {
@@ -169,4 +228,17 @@ const { title = 'ReporTA', description = 'Sistema de reportes ciudadanos' } = As
   display: flex; flex-direction: column; gap: 0.75rem;
   z-index: 9000; pointer-events: none;
 }
+
+/* ── Toast Items ── */
+.toast {
+  font-family: var(--font-display); font-size: 0.875rem; font-weight: 600;
+  padding: 0.7rem 1.1rem; border-radius: var(--radius);
+  box-shadow: var(--shadow); pointer-events: auto;
+  animation: slideInRight 0.3s ease both;
+  max-width: 320px; word-break: break-word;
+}
+.toast-exit { animation: slideOutRight 0.3s ease both; }
+.toast-success { background: var(--success-dim); color: var(--success); border: 1px solid rgba(34,197,94,0.3); }
+.toast-error   { background: var(--danger-dim);  color: var(--danger);  border: 1px solid rgba(239,68,68,0.3); }
+.toast-info    { background: var(--info-dim);    color: var(--info);    border: 1px solid rgba(59,130,246,0.3); }
 </style>

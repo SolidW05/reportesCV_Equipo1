@@ -5,8 +5,9 @@ import type { ReportResponseDto } from '../../types/report';
 export interface Props {
   report: ReportResponseDto;
   showActions?: boolean;
+  showUserActions?: boolean;
 }
-const { report, showActions = false } = Astro.props;
+const { report, showActions = false, showUserActions = false } = Astro.props;
 const dateFormatted = new Date(report.date).toLocaleDateString('es-MX', {
   year: 'numeric', month: 'short', day: 'numeric'
 });
@@ -46,6 +47,21 @@ const dateFormatted = new Date(report.date).toLocaleDateString('es-MX', {
         </button>
         <button class="rcard-action-btn btn-delete" data-id={report.idReport}>
           Eliminar
+        </button>
+      </span>
+    )}
+    {showUserActions && (
+      <span class="rcard-actions">
+        <a href={`/reports/edit/${report.idReport}`} class="rcard-action-btn btn-edit">
+          ✎ Editar
+        </a>
+        <button
+          class="rcard-action-btn btn-user-delete"
+          data-id={String(report.idReport)}
+          data-desc={report.description}
+          data-image={report.imageName ?? ''}
+        >
+          🗑 Eliminar
         </button>
       </span>
     )}
@@ -123,4 +139,29 @@ const dateFormatted = new Date(report.date).toLocaleDateString('es-MX', {
   border: 1px solid rgba(239,68,68,0.3);
 }
 .btn-delete:hover { background: var(--danger); color: #fff; }
+.btn-edit {
+  background: var(--accent-dim); color: var(--accent);
+  border: 1px solid rgba(245,158,11,0.3); text-decoration: none;
+  display: inline-flex; align-items: center;
+}
+.btn-edit:hover { background: var(--accent); color: var(--bg); }
+.btn-user-delete {
+  background: var(--danger-dim); color: var(--danger);
+  border: 1px solid rgba(239,68,68,0.3);
+}
+.btn-user-delete:hover { background: var(--danger); color: #fff; }
 </style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.btn-user-delete').forEach(btn => {
+    btn.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('report:delete-request', {
+        detail: {
+          id: btn.dataset.id!,
+          desc: btn.dataset.desc ?? '',
+          image: btn.dataset.image ?? '',
+        }
+      }));
+    });
+  });
+</script>

@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.reporta.report_service.models.dto.ReportCreateDto;
 import com.reporta.report_service.models.dto.ReportResponseDto;
 import com.reporta.report_service.models.dto.ReportUpdateStatus;
+import com.reporta.report_service.security.JwtUser;
 import com.reporta.report_service.services.ImageStorageService;
 import com.reporta.report_service.services.ReportService;
 
@@ -17,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,14 +39,23 @@ public class ReportController {
     private ImageStorageService imageStorageService;
 
     @GetMapping("/usuarios/{id}")
-    public ResponseEntity<List<ReportResponseDto>> obtenerReportesPorUsuario(@PathVariable Long id) {
-        return ResponseEntity.ok(reportService.obtenerReportesPorUsuario(id));
+    public ResponseEntity<List<ReportResponseDto>> obtenerReportesPorUsuario(@PathVariable Long id, @AuthenticationPrincipal JwtUser user) {
+        
+        boolean sameUser = id.equals(Long.valueOf(user.getId()));
+        System.out.println("ID del usuario autenticado: " + user.getId());
+        System.out.println("ID del usuario solicitado: " + id);
+        System.out.println("¿Es el mismo usuario? " + sameUser);
+        
+        if (sameUser) {
+            return ResponseEntity.ok(reportService.obtenerReportesPorUsuario(id));
+        }
+        throw new RuntimeException("No autorizado");
     }
 
     
     @GetMapping("/{id}")
-    public ResponseEntity<ReportResponseDto> obtenerDetalleReporte(@PathVariable Long id) {
-        return ResponseEntity.ok(reportService.obtenerReportePorId(id));
+    public ResponseEntity<ReportResponseDto> obtenerDetalleReporte(@PathVariable Long id, @AuthenticationPrincipal JwtUser user) {
+        return ResponseEntity.ok(reportService.obtenerReportePorId(id, user));
     }
 
     // @PostMapping
@@ -55,16 +67,16 @@ public class ReportController {
 
     @PostMapping(consumes = { "multipart/form-data" })
     public ResponseEntity<ReportResponseDto> agregarReporteConImagen(@RequestPart("report") ReportCreateDto report,
-            @RequestPart(value = "image", required = false) MultipartFile image) {
+            @RequestPart(value = "image", required = false) MultipartFile image, @AuthenticationPrincipal JwtUser user) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(reportService.guardarReporte(report, image));
     }
 
     @PutMapping("/actualizar/estatus")
     public ResponseEntity<ReportResponseDto> actualizarEstatus(
-            @RequestBody ReportUpdateStatus actualizacionReporte) {
+            @RequestBody ReportUpdateStatus actualizacionReporte, @AuthenticationPrincipal JwtUser user) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(reportService.actualizarEstadoReporte(actualizacionReporte));
+                .body(reportService.actualizarEstadoReporte(actualizacionReporte, user));
     }
 
     @GetMapping("/municipio/{municipio}")
@@ -83,17 +95,17 @@ public class ReportController {
     @PutMapping("/{id}")
     public ResponseEntity<ReportResponseDto> actualizarReporte(
             @PathVariable Long id, @RequestPart("report") ReportCreateDto actualizacionReporte,
-            @RequestPart(value = "image", required = false) MultipartFile image) {
+            @RequestPart(value = "image", required = false) MultipartFile image, @AuthenticationPrincipal JwtUser user) 
+            throws Exception {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(reportService.actualizarReporte(id, actualizacionReporte, image));
+                .body(reportService.actualizarReporte(id, actualizacionReporte, image, user));
     }
 
     // Endpoint para obtener la imagen del reporte por su ID
     @GetMapping("/images/{id}")
     public ResponseEntity<UrlResource> getImage(@PathVariable Long id) throws Exception {
 
-        UrlResource resource = imageStorageService.cargarImagen(reportService.obtenerReportePorId(id)
-                .getImageName());
+        UrlResource resource = imageStorageService.cargarImagen(reportService.obtenerNombreImagenPorReporteId(id));
 
         return ResponseEntity.ok().body(resource);
     }

@@ -21,5 +21,17 @@ public class GlobalExceptionHandler {
         response.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<?> forbidden(
+            ForbiddenException ex
+    ) {
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(Map.of(
+                        "message",
+                        ex.getMessage()
+                ));
+    }
 
 }

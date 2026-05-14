@@ -5,7 +5,7 @@ export interface Props {
   currentStatus?: string;
   currentObs?: string;
 }
-const { reportId, currentStatus = "PENDING", currentObs = "" } = Astro.props;
+const { reportId, currentStatus = "PENDIENTE", currentObs = "" } = Astro.props;
 ---
 
 <form
@@ -22,16 +22,16 @@ const { reportId, currentStatus = "PENDING", currentObs = "" } = Astro.props;
         class="field-input field-select"
         required
       >
-        <option value="0" selected={currentStatus === "PENDING"}
+        <option value="PENDIENTE" selected={currentStatus === "PENDIENTE"}
           >Pendiente</option
         >
-        <option value="1" selected={currentStatus === "IN_REVIEW"}
-          >En Revisión</option
+        <option value="EN_PROCESO" selected={currentStatus === "EN_PROCESO"}
+          >En Proceso</option
         >
-        <option value="2" selected={currentStatus === "RESOLVED"}
+        <option value="RESUELTO" selected={currentStatus === "RESUELTO"}
           >Resuelto</option
         >
-        <option value="3" selected={currentStatus === "REJECTED"}
+        <option value="RECHAZADO" selected={currentStatus === "RECHAZADO"}
           >Rechazado</option
         >
       </select>
@@ -168,11 +168,25 @@ const { reportId, currentStatus = "PENDING", currentObs = "" } = Astro.props;
       msg.className = "sf-msg";
 
       try {
-        const res = await fetch("/api/report/actualizar/estatus", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+        const token =
+  document.cookie.match(/(?:^|; )jwt=([^;]*)/)?.[1] ?? null;
+
+const res = await fetch(
+  "/api/report/actualizar/estatus",
+  {
+    method: "PUT",
+
+    headers: {
+      "Content-Type": "application/json",
+
+      ...(token && {
+        Authorization: `Bearer ${token}`
+      })
+    },
+
+    body: JSON.stringify(payload),
+  }
+);
         if (!res.ok) throw new Error(`Error ${res.status}`);
         msg.textContent = "✓ Estado actualizado";
         msg.className = "sf-msg success";

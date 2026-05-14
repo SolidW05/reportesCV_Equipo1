@@ -1,0 +1,332 @@
+---
+import MainLayout from '../../../layouts/MainLayout.astro';
+import ReportImage from '../../../components/reports/ReportImage.astro';
+import type { ReportResponseDto } from '../../../types/report';
+import { decodeJwt, isTokenExpired, JWT_COOKIE, isUsuario, isAutoridad } from '../../../utils/auth';
+import { apiFetch2 } from '../../../services/api';
+
+const token = Astro.cookies.get(JWT_COOKIE)?.value;
+if (!token) return Astro.redirect('/login');
+const payload = decodeJwt(token);
+if (!payload || isTokenExpired(payload)) return Astro.redirect('/login');
+
+if (!isUsuario(payload.tipoUser)) {
+  if (isAutoridad(payload.tipoUser)) return Astro.redirect('/admin/reports');
+  Astro.cookies.delete(JWT_COOKIE, { path: '/' });
+  return Astro.redirect('/login?error=InvalidRole');
+}
+
+const { id } = Astro.params;
+const userId = payload.id;
+
+let report: ReportResponseDto | null = null;
+let error: string | null = null;
+
+try {
+  const res = await apiFetch2(`/report/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  report = await res.json();
+} catch (e) {
+  error = (e as Error).message;
+}
+---
+
+<MainLayout title={`Editar Reporte #${id}`}>
+  <div class="container section">
+
+    <div class="page-header">
+      <div>
+        <div class="page-breadcrumb">
+          <a href="/reports">← Mis Reportes</a>
+        </div>
+        <h1 class="page-title">Editar Reporte <span class="mono edit-id">#{id}</span></h1>
+        <p class="page-sub">Modifica la descripción o la imagen del reporte.</p>
+      </div>
+    </div>
+
+    {error && (
+      <div class="alert-error">
+        <strong>Error al cargar reporte:</strong> {error}
+      </div>
+    )}
+
+    {report && (
+      <div class="edit-layout">
+        <div class="edit-form-wrap">
+          <form id="editForm" novalidate>
+            <input type="hidden" id="reportId" value={report.idReport} />
+            <input type="hidden" id="idUser" value={userId} />
+            <input type="hidden" id="idLocation" value={report.idLocation} />
+
+            <!-- Description -->
+            <div class="field">
+              <label for="description" class="field-label">
+                Descripción <span class="req">*</span>
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                required
+                rows="4"
+                placeholder="Describe el problema detalladamente…"
+                class="field-input field-textarea"
+              >{report.description}</textarea>
+            </div>
+
+            <!-- Current image preview -->
+            {report.imageName && (
+              <div class="field">
+                <div class="field-label">Imagen actual</div>
+                <ReportImage reportId={report.idReport} class="current-img" />
+              </div>
+            )}
+
+            <!-- New image upload -->
+            <div class="field">
+              <label for="image" class="field-label">
+                {report.imageName ? 'Reemplazar imagen (opcional)' : 'Imagen (opcional)'}
+              </label>
+              <div class="file-drop" id="fileDrop">
+                <input
+                  id="image"
+                  name="image"
+                  type="file"
+                  accept="image/*"
+                  class="file-input"
+                />
+                <div class="file-drop-inner">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                  <p class="file-text">Arrastra una imagen o <span>haz clic</span></p>
+                  <p class="file-hint mono" id="fileName">PNG, JPG, WEBP — máx. 10 MB</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <a href="/reports" class="btn-cancel">Cancelar</a>
+              <button type="submit" id="submitBtn" class="btn-submit">
+                <span id="submitLabel">Guardar Cambios</span>
+                <span id="submitSpinner" class="spinner" style="display:none" aria-hidden="true"></span>
+              </button>
+            </div>
+
+            <div id="formFeedback" role="alert" aria-live="polite"></div>
+          </form>
+        </div>
+
+        <aside class="edit-aside">
+          <div class="aside-card">
+            <h3 class="aside-title">✏️ Edición</h3>
+            <ul class="aside-list">
+              <li>Solo puedes modificar la descripción e imagen.</li>
+              <li>La ubicación del reporte no puede cambiar.</li>
+              <li>El estado lo gestiona la autoridad responsable.</li>
+              <li>Si subes una imagen nueva, reemplazará la anterior.</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    )}
+
+  </div>
+</MainLayout>
+
+<script>
+  import { buildReportFormData } from '../../../utils/formDataHelper';
+
+  const form = document.getElementById('editForm') as HTMLFormElement | null;
+  if (!form) throw new Error('editForm not found');
+
+  const submitBtn   = document.getElementById('submitBtn') as HTMLButtonElement;
+  const submitLabel = document.getElementById('submitLabel')!;
+  const submitSpin  = document.getElementById('submitSpinner')!;
+  const feedback    = document.getElementById('formFeedback')!;
+  const fileInput   = document.getElementById('image') as HTMLInputElement;
+  const fileNameEl  = document.getElementById('fileName')!;
+  const fileDrop    = document.getElementById('fileDrop')!;
+
+  const reportId  = (document.getElementById('reportId') as HTMLInputElement).value;
+  const idUser    = Number((document.getElementById('idUser') as HTMLInputElement).value);
+  const idLocation = Number((document.getElementById('idLocation') as HTMLInputElement).value);
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files?.[0]) {
+      fileNameEl.textContent = fileInput.files[0].name;
+      fileDrop.style.borderColor = 'var(--accent)';
+    }
+  });
+  fileDrop.addEventListener('dragover', (e) => { e.preventDefault(); fileDrop.classList.add('drag-over'); });
+  fileDrop.addEventListener('dragleave', () => fileDrop.classList.remove('drag-over'));
+  fileDrop.addEventListener('drop', () => fileDrop.classList.remove('drag-over'));
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    feedback.textContent = '';
+    feedback.className = '';
+
+    const description = (document.getElementById('description') as HTMLTextAreaElement).value.trim();
+    if (!description) {
+      feedback.textContent = 'Por favor ingresa una descripción.';
+      feedback.className = 'error';
+      return;
+    }
+
+    const imageFile = fileInput.files?.[0] ?? null;
+
+    submitBtn.disabled = true;
+    submitSpin.style.display = 'inline-block';
+    submitLabel.textContent = 'Guardando...';
+
+    try {
+      const token = document.cookie.match(/(?:^|;\s*)jwt=([^;]+)/)?.[1] ?? null;
+      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+
+      const fd = buildReportFormData({ idUser, idLocation, description }, imageFile);
+
+      const res = await fetch(`/api/report/${reportId}`, {
+        method: 'PUT',
+        headers,
+        body: fd,
+      });
+      if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
+
+      feedback.textContent = '✓ Reporte actualizado exitosamente.';
+      feedback.className = 'success';
+      if ((window as any).showToast) (window as any).showToast('Reporte actualizado', 'success');
+      setTimeout(() => { window.location.href = '/reports'; }, 1500);
+    } catch (err) {
+      feedback.textContent = `✗ ${(err as Error).message}`;
+      feedback.className = 'error';
+    } finally {
+      submitBtn.disabled = false;
+      submitLabel.textContent = 'Guardar Cambios';
+      submitSpin.style.display = 'none';
+    }
+  });
+</script>
+
+<style>
+.page-header { margin-bottom: 2.5rem; }
+.page-breadcrumb { margin-bottom: 0.5rem; font-size: 0.85rem; }
+.page-breadcrumb a { color: var(--text-muted); }
+.page-breadcrumb a:hover { color: var(--accent); }
+.page-title { font-size: clamp(1.8rem, 4vw, 3rem); margin-bottom: 0.25rem; }
+.edit-id { font-size: clamp(1.2rem, 2.5vw, 2rem); color: var(--accent); }
+.page-sub { color: var(--text-muted); font-size: 0.9rem; }
+
+.alert-error {
+  background: var(--danger-dim); border: 1px solid rgba(239,68,68,0.3);
+  border-radius: var(--radius-lg); padding: 1rem 1.25rem; color: var(--danger);
+  margin-bottom: 1.5rem;
+}
+
+.edit-layout {
+  display: grid; grid-template-columns: 1fr 300px; gap: 2.5rem; align-items: start;
+}
+@media (max-width: 900px) {
+  .edit-layout { grid-template-columns: 1fr; }
+  .edit-aside { order: -1; }
+}
+
+.edit-form-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2rem;
+}
+
+.field { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.5rem; }
+.field:last-child { margin-bottom: 0; }
+.field-label {
+  font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.07em;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.req { color: var(--accent); }
+.field-input {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  font-family: var(--font-display); font-size: 0.9375rem;
+  padding: 0.65rem 0.875rem; width: 100%; outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.field-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+}
+.field-textarea { resize: vertical; min-height: 100px; }
+
+.current-img { max-height: 200px; }
+
+.file-drop {
+  position: relative; border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--transition), background var(--transition);
+  overflow: hidden;
+}
+.file-drop:hover, .file-drop.drag-over {
+  border-color: var(--accent); background: var(--accent-dim);
+}
+.file-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+.file-drop-inner {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 0.5rem; padding: 2rem 1rem; pointer-events: none;
+}
+.file-text { font-size: 0.9rem; color: var(--text-dim); }
+.file-text span { color: var(--accent); font-weight: 700; }
+.file-hint { font-size: 0.72rem; color: var(--text-muted); }
+
+.form-actions { display: flex; justify-content: flex-end; align-items: center; gap: 1rem; margin-top: 0.5rem; }
+.btn-cancel {
+  font-family: var(--font-display); font-weight: 600; font-size: 0.9rem;
+  color: var(--text-muted); text-decoration: none;
+  padding: 0.65rem 1.25rem; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--surface-2);
+  transition: all var(--transition);
+}
+.btn-cancel:hover { border-color: var(--accent); color: var(--accent); }
+.btn-submit {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  background: var(--accent); color: var(--bg);
+  font-family: var(--font-display); font-weight: 800; font-size: 1rem;
+  padding: 0.75rem 2rem; border: none; border-radius: var(--radius);
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+.btn-submit:hover {
+  background: var(--accent-hover); transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(245,158,11,0.3);
+}
+.btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.spinner {
+  width: 16px; height: 16px; border: 2px solid var(--bg);
+  border-top-color: transparent; border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+#formFeedback { min-height: 1.5rem; font-size: 0.875rem; margin-top: 0.75rem; }
+#formFeedback.success { color: var(--success); }
+#formFeedback.error { color: var(--danger); }
+
+.aside-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1rem;
+}
+.aside-title { font-size: 1rem; margin-bottom: 0.75rem; }
+.aside-list {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  list-style: none; padding: 0; color: var(--text-dim); font-size: 0.85rem; line-height: 1.55;
+}
+.aside-list li::before { content: '▸ '; color: var(--accent); }
+.aside-api {}
+.api-tag { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.4rem; }
+.api-url {
+  display: block; font-size: 0.875rem; color: var(--accent);
+  background: var(--accent-dim); padding: 0.4rem 0.75rem;
+  border-radius: var(--radius); margin-bottom: 0.6rem;
+}
+.api-note { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; }
+</style>

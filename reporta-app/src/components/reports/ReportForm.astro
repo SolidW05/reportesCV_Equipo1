@@ -1,37 +1,113 @@
 ---
-// ReportForm.astro — Create a new report with optional image
+// ReportForm.astro — Create a new report with Leaflet map location picker
+export interface Props {
+  userId: number;
+}
+const { userId } = Astro.props;
 ---
 
 <form id="reportForm" class="report-form" novalidate>
-  <div class="form-grid">
-    <div class="field">
-      <label for="idUser" class="field-label">ID Usuario <span class="req">*</span></label>
-      <input id="idUser" name="idUser" type="number" min="1" required
-             placeholder="Ej: 1" class="field-input" />
-    </div>
-    <div class="field">
-      <label for="idLocation" class="field-label">ID Ubicación <span class="req">*</span></label>
-      <input id="idLocation" name="idLocation" type="number" min="1" required
-             placeholder="Ej: 5" class="field-input" />
-    </div>
-  </div>
+  <!-- Hidden fields populated by the map and props -->
+  <input type="hidden" name="idUser" value={userId} />
+  <input type="hidden" name="idLocation" id="idLocation" value="" />
 
+  <!-- ── Map Picker ──────────────────────────────────────────────── -->
   <div class="field">
-    <label for="description" class="field-label">Descripción <span class="req">*</span></label>
-    <textarea id="description" name="description" required rows="4"
-              placeholder="Describe el problema detalladamente..."
-              class="field-input field-textarea"></textarea>
+    <div class="field-label">
+      Ubicación del reporte <span class="req">*</span>
+      <span class="field-hint mono">— haz clic en el mapa para seleccionar</span
+      >
+    </div>
+
+    <div class="map-layout">
+      <!-- Leaflet Map -->
+      <div id="locationMap" class="map-container"></div>
+
+      <!-- Address Panel -->
+      <div class="map-panel">
+        <div id="mapInstruction" class="map-instruction">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            opacity="0.5"
+          >
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
+            ></path><circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <p>Haz clic en el mapa para<br />obtener la dirección</p>
+        </div>
+
+        <div id="mapLoading" class="map-loading" style="display:none">
+          <span class="spinner-sm"></span> Consultando dirección…
+        </div>
+
+        <div id="mapError" class="map-error" style="display:none"></div>
+
+        <div id="mapResult" class="map-result" style="display:none">
+          <div class="result-badge">✓ Ubicación seleccionada</div>
+          <dl class="result-list">
+            <div class="result-row">
+              <dt>Dirección</dt><dd id="r-dir">-</dd>
+            </div>
+            <div class="result-row"><dt>Colonia</dt> <dd id="r-col">-</dd></div>
+            <div class="result-row">
+              <dt>Municipio</dt><dd id="r-mun">-</dd>
+            </div>
+            <div class="result-row"><dt>C.P.</dt> <dd id="r-cp">-</dd></div>
+            <div class="result-row mono-row">
+              <dt>ID guardado</dt><dd id="r-id" class="mono">-</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </div>
   </div>
 
+  <!-- Description -->
+  <div class="field">
+    <label for="description" class="field-label"
+      >Descripción <span class="req">*</span></label
+    >
+    <textarea
+      id="description"
+      name="description"
+      required
+      rows="4"
+      placeholder="Describe el problema detalladamente: tipo de daño, tamaño, riesgo que representa…"
+      class="field-input field-textarea"></textarea>
+  </div>
+
+  <!-- Image -->
   <div class="field">
     <label for="image" class="field-label">Imagen (opcional)</label>
     <div class="file-drop" id="fileDrop">
-      <input id="image" name="image" type="file"
-             accept="image/*" class="file-input" />
+      <input
+        id="image"
+        name="image"
+        type="file"
+        accept="image/*"
+        class="file-input"
+      />
       <div class="file-drop-inner">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+        <svg
+          width="28"
+          height="28"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          opacity="0.5"
+        >
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline><line
+            x1="12"
+            y1="3"
+            x2="12"
+            y2="15"></line>
         </svg>
         <p class="file-text">Arrastra una imagen o <span>haz clic</span></p>
         <p class="file-hint mono" id="fileName">PNG, JPG, WEBP — máx. 10 MB</p>
@@ -42,7 +118,11 @@
   <div class="form-actions">
     <button type="submit" id="submitBtn" class="btn-submit">
       <span id="submitLabel">Crear Reporte</span>
-      <span id="submitSpinner" class="spinner" style="display:none" aria-hidden="true"></span>
+      <span
+        id="submitSpinner"
+        class="spinner"
+        style="display:none"
+        aria-hidden="true"></span>
     </button>
   </div>
 
@@ -50,155 +130,462 @@
 </form>
 
 <style>
-.report-form { display: flex; flex-direction: column; gap: 1.5rem; }
+  .report-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
 
-.form-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;
-}
-@media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+  /* ── Map layout ── */
+  .map-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 1rem;
+    height: 340px;
+  }
+  @media (max-width: 700px) {
+    .map-layout {
+      grid-template-columns: 1fr;
+      height: auto;
+    }
+  }
 
-.field { display: flex; flex-direction: column; gap: 0.4rem; }
-.field-label {
-  font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600;
-  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.07em;
-}
-.req { color: var(--accent); }
-.field-input {
-  background: var(--surface-2); border: 1px solid var(--border);
-  border-radius: var(--radius); color: var(--text);
-  font-family: var(--font-display); font-size: 0.9375rem;
-  padding: 0.65rem 0.875rem; width: 100%; outline: none;
-  transition: border-color var(--transition), box-shadow var(--transition);
-}
-.field-input:focus {
-  border-color: var(--accent); box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
-}
-.field-textarea { resize: vertical; min-height: 100px; }
+  .map-container {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 2px solid var(--border);
+    min-height: 300px;
+    transition: border-color var(--transition);
+  }
+  .map-container:focus-within,
+  .map-container.active {
+    border-color: var(--accent);
+  }
 
-/* File Drop */
-.file-drop {
-  position: relative; border: 2px dashed var(--border);
-  border-radius: var(--radius-lg);
-  transition: border-color var(--transition), background var(--transition);
-  overflow: hidden;
-}
-.file-drop:hover, .file-drop.drag-over {
-  border-color: var(--accent); background: var(--accent-dim);
-}
-.file-input {
-  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
-}
-.file-drop-inner {
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 0.5rem; padding: 2rem 1rem; pointer-events: none;
-}
-.file-text {
-  font-size: 0.9rem; color: var(--text-dim);
-}
-.file-text span { color: var(--accent); font-weight: 700; }
-.file-hint { font-size: 0.72rem; color: var(--text-muted); }
+  .map-panel {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
 
-/* Submit */
-.form-actions { display: flex; justify-content: flex-end; }
-.btn-submit {
-  display: inline-flex; align-items: center; gap: 0.6rem;
-  background: var(--accent); color: var(--bg);
-  font-family: var(--font-display); font-weight: 800; font-size: 1rem;
-  padding: 0.75rem 2rem; border: none; border-radius: var(--radius);
-  cursor: pointer; transition: background var(--transition), transform var(--transition),
-                               box-shadow var(--transition);
-  letter-spacing: 0.02em;
-}
-.btn-submit:hover {
-  background: var(--accent-hover); transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(245,158,11,0.3);
-}
-.btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-.spinner {
-  width: 16px; height: 16px; border: 2px solid var(--bg);
-  border-top-color: transparent; border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
+  .map-instruction {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    height: 100%;
+    min-height: 120px;
+  }
 
-/* Feedback */
-#formFeedback { min-height: 1.5rem; font-size: 0.875rem; }
-#formFeedback.success { color: var(--success); }
-#formFeedback.error   { color: var(--danger); }
+  .map-loading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    padding: 0.5rem 0;
+  }
+  .spinner-sm {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+
+  .map-error {
+    color: var(--danger);
+    font-size: 0.82rem;
+    background: var(--danger-dim);
+    border-radius: var(--radius);
+    padding: 0.5rem 0.75rem;
+  }
+
+  .map-result {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .result-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(34, 197, 94, 0.12);
+    color: var(--success);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    padding: 0.3rem 0.75rem;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .result-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid var(--border);
+    gap: 0.5rem;
+  }
+  .result-row:last-child {
+    border-bottom: none;
+  }
+  .result-row dt {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .result-row dd {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin: 0;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mono-row dd {
+    color: var(--accent);
+  }
+
+  /* ── Field inputs ── */
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .field-label {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .field-hint {
+    font-weight: 400;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+  }
+  .req {
+    color: var(--accent);
+  }
+  .field-input {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font-display);
+    font-size: 0.9375rem;
+    padding: 0.65rem 0.875rem;
+    width: 100%;
+    outline: none;
+    transition:
+      border-color var(--transition),
+      box-shadow var(--transition);
+  }
+  .field-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+  }
+  .field-textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  /* ── File Drop ── */
+  .file-drop {
+    position: relative;
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-lg);
+    transition:
+      border-color var(--transition),
+      background var(--transition);
+    overflow: hidden;
+  }
+  .file-drop:hover,
+  .file-drop.drag-over {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+  .file-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+  }
+  .file-drop-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2rem 1rem;
+    pointer-events: none;
+  }
+  .file-text {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+  }
+  .file-text span {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .file-hint {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+
+  /* ── Submit ── */
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .btn-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition:
+      background var(--transition),
+      transform var(--transition),
+      box-shadow var(--transition);
+  }
+  .btn-submit:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);
+  }
+  .btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--bg);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  #formFeedback {
+    min-height: 1.5rem;
+    font-size: 0.875rem;
+  }
+  #formFeedback.success {
+    color: var(--success);
+  }
+  #formFeedback.error {
+    color: var(--danger);
+  }
 </style>
 
+<script is:inline>
+  window.selectedLat = null;
+  window.selectedLng = null;
+
+  // Use an interval to poll for Leaflet just in case it loads async
+  const initMap = setInterval(() => {
+    if (typeof L === "undefined") return;
+    clearInterval(initMap);
+
+    const mapEl = document.getElementById("locationMap");
+    if (!mapEl) return;
+
+    const map = L.map("locationMap").setView([20.6597, -103.3496], 12);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "© OpenStreetMap contributors",
+      maxZoom: 19,
+    }).addTo(map);
+
+    let marker = null;
+    const instruction = document.getElementById("mapInstruction");
+    const result = document.getElementById("mapResult");
+
+    map.on("click", (e) => {
+      window.selectedLat = e.latlng.lat;
+      window.selectedLng = e.latlng.lng;
+
+      if (marker) map.removeLayer(marker);
+      marker = L.marker([window.selectedLat, window.selectedLng], {
+        icon: L.divIcon({
+          className: "",
+          html: '<div style="width:16px;height:16px;background:#f59e0b;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.5)"></div>',
+          iconSize: [16, 16],
+          iconAnchor: [8, 8],
+        }),
+      }).addTo(map);
+
+      if (instruction) instruction.style.display = "none";
+      if (result) result.style.display = "block";
+
+      document.getElementById("r-dir").textContent = "Se consultará al enviar";
+      document.getElementById("r-col").textContent =
+        `${window.selectedLat.toFixed(4)}, ${window.selectedLng.toFixed(4)}`;
+      document.getElementById("r-mun").textContent = "-";
+      document.getElementById("r-cp").textContent = "-";
+      document.getElementById("r-id").textContent = "Pendiente";
+
+      mapEl.classList.add("active");
+    });
+  }, 100);
+</script>
+
 <script>
-import { buildReportFormData } from '../../utils/formDataHelper';
+  import { buildReportFormData } from "../../utils/formDataHelper";
 
-const form = document.getElementById('reportForm') as HTMLFormElement;
-const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
-const submitLabel = document.getElementById('submitLabel')!;
-const submitSpinner = document.getElementById('submitSpinner')!;
-const feedback = document.getElementById('formFeedback')!;
-const fileInput = document.getElementById('image') as HTMLInputElement;
-const fileNameEl = document.getElementById('fileName')!;
-const fileDrop = document.getElementById('fileDrop')!;
+  const form = document.getElementById("reportForm") as HTMLFormElement;
+  const submitBtn = document.getElementById("submitBtn") as HTMLButtonElement;
+  const submitLabel = document.getElementById("submitLabel")!;
+  const submitSpin = document.getElementById("submitSpinner")!;
+  const feedback = document.getElementById("formFeedback")!;
+  const fileInput = document.getElementById("image") as HTMLInputElement;
+  const fileNameEl = document.getElementById("fileName")!;
+  const fileDrop = document.getElementById("fileDrop")!;
+  const idLocInput = document.getElementById("idLocation") as HTMLInputElement;
 
-// Show selected file name
-fileInput.addEventListener('change', () => {
-  if (fileInput.files?.[0]) {
-    fileNameEl.textContent = fileInput.files[0].name;
-    fileDrop.style.borderColor = 'var(--accent)';
-  }
-});
+  // File name display
+  fileInput.addEventListener("change", () => {
+    if (fileInput.files?.[0]) {
+      fileNameEl.textContent = fileInput.files[0].name;
+      fileDrop.style.borderColor = "var(--accent)";
+    }
+  });
+  fileDrop.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    fileDrop.classList.add("drag-over");
+  });
+  fileDrop.addEventListener("dragleave", () =>
+    fileDrop.classList.remove("drag-over"),
+  );
+  fileDrop.addEventListener("drop", () =>
+    fileDrop.classList.remove("drag-over"),
+  );
 
-// Drag-over effect
-fileDrop.addEventListener('dragover', (e) => {
-  e.preventDefault(); fileDrop.classList.add('drag-over');
-});
-fileDrop.addEventListener('dragleave', () => fileDrop.classList.remove('drag-over'));
-fileDrop.addEventListener('drop', () => fileDrop.classList.remove('drag-over'));
+  // Submit
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    feedback.textContent = "";
+    feedback.className = "";
 
-// Submit handler
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  feedback.textContent = '';
-  feedback.className = '';
+    const data = new FormData(form);
+    const idUser = Number(data.get("idUser"));
+    const description = String(data.get("description") ?? "").trim();
+    const imageFile = fileInput.files?.[0] ?? null;
 
-  const data = new FormData(form);
-  const idUser = Number(data.get('idUser'));
-  const idLocation = Number(data.get('idLocation'));
-  const description = String(data.get('description') ?? '').trim();
-  const imageFile = fileInput.files?.[0] ?? null;
+    // Retrieve global coordinates from the inline script
+    const lat = (window as any).selectedLat;
+    const lng = (window as any).selectedLng;
 
-  if (!idUser || !idLocation || !description) {
-    feedback.textContent = 'Por favor completa todos los campos requeridos.';
-    feedback.className = 'error';
-    return;
-  }
+    if (lat === null || lng === null) {
+      feedback.textContent = "Por favor selecciona una ubicación en el mapa.";
+      feedback.className = "error";
+      return;
+    }
+    if (!description) {
+      feedback.textContent = "Por favor ingresa una descripción del problema.";
+      feedback.className = "error";
+      return;
+    }
 
-  submitBtn.disabled = true;
-  submitLabel.textContent = 'Enviando...';
-  submitSpinner.style.display = 'inline-block';
+    submitBtn.disabled = true;
+    submitSpin.style.display = "inline-block";
 
-  try {
-    const fd = buildReportFormData({ idUser, idLocation, description }, imageFile);
-    const res = await fetch('/api/report', { method: 'POST', body: fd });
-    if (!res.ok) throw new Error(`Error ${res.status}`);
+    try {
+      const token = document.cookie.match(/(?:^|; )jwt=([^;]*)/)?.[1] ?? null;
+      const headers: Record<string, string> = token
+        ? { Authorization: `Bearer ${token}` }
+        : {};
 
-    feedback.textContent = '✓ Reporte creado exitosamente.';
-    feedback.className = 'success';
-    form.reset();
-    fileNameEl.textContent = 'PNG, JPG, WEBP — máx. 10 MB';
-    fileDrop.style.borderColor = '';
+      // 1. Fetch Location ID FIRST
+      submitLabel.textContent = "Consultando ubicación…";
 
-    // Show toast if available
-    if ((window as any).showToast) (window as any).showToast('Reporte creado', 'success');
+      const locHeaders: Record<string, string> = {};
+      if (token) locHeaders["Authorization"] = `Bearer ${token}`;
 
-    // Redirect after delay
-    setTimeout(() => { window.location.href = '/reports'; }, 1500);
-  } catch (err) {
-    feedback.textContent = `✗ ${(err as Error).message ?? 'Error al crear el reporte.'}`;
-    feedback.className = 'error';
-    if ((window as any).showToast) (window as any).showToast('Error al crear reporte', 'error');
-  } finally {
-    submitBtn.disabled = false;
-    submitLabel.textContent = 'Crear Reporte';
-    submitSpinner.style.display = 'none';
-  }
-});
+      const locRes = await fetch(
+        `/api/ubicacion/reverse?lat=${lat}&lng=${lng}`,
+        {
+          method: "POST",
+          headers: locHeaders,
+        },
+      );
+
+      if (!locRes.ok) {
+        const errText = await locRes.text();
+        throw new Error(
+          `Error en el servidor (HTTP ${locRes.status}): ${errText}`,
+        );
+      }
+      const locData = await locRes.json();
+      const idLocation = locData.id;
+
+      if (!idLocation)
+        throw new Error("La API de ubicación no retornó un ID válido.");
+
+      // 2. Submit the Report with the acquired Location ID
+      submitLabel.textContent = "Enviando reporte…";
+      const fd = buildReportFormData(
+        { idUser, idLocation, description },
+        imageFile,
+      );
+
+      const res = await fetch("/api/report", {
+        method: "POST",
+        headers,
+        body: fd,
+      });
+      if (!res.ok) throw new Error(`Error en reporte: HTTP ${res.status}`);
+
+      feedback.textContent = "✓ Reporte creado exitosamente.";
+      feedback.className = "success";
+      form.reset();
+      (window as any).selectedLat = null;
+      (window as any).selectedLng = null;
+
+      fileNameEl.textContent = "PNG, JPG, WEBP — máx. 10 MB";
+      fileDrop.style.borderColor = "";
+
+      setTimeout(() => {
+        window.location.href = "/reports";
+      }, 1500);
+    } catch (err) {
+      feedback.textContent = `✗ ${(err as Error).message}`;
+      feedback.className = "error";
+    } finally {
+      submitBtn.disabled = false;
+      submitLabel.textContent = "Crear Reporte";
+      submitSpin.style.display = "none";
+    }
+  });
 </script>

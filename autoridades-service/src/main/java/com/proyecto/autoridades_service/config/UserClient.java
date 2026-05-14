@@ -15,7 +15,6 @@ public class UserClient {
     }
 
     public Long cambiarTipoUsuario(String email) {
-        System.out.println("USING PATCH METHOD");
         return webClient.patch()
             .uri("/api/users/cambiar-tipo/{email}", email)
             .retrieve()

@@ -5,11 +5,13 @@ import type { ReportResponseDto } from '../../types/report';
 export interface Props {
   reports: ReportResponseDto[];
   showActions?: boolean;
+  showUserActions?: boolean;
   emptyText?: string;
 }
 const {
   reports,
   showActions = false,
+  showUserActions = false,
   emptyText = 'No hay reportes disponibles.',
 } = Astro.props;
 ---
@@ -25,7 +27,7 @@ const {
 ) : (
   <div class="report-grid stagger">
     {reports.map((r) => (
-      <ReportCard report={r} showActions={showActions} />
+      <ReportCard report={r} showActions={showActions} showUserActions={showUserActions} />
     ))}
   </div>
 )}

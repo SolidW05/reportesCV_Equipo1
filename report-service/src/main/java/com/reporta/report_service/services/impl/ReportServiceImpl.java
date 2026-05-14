@@ -9,12 +9,14 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.reporta.report_service.config.UbicacionClient;
+import com.reporta.report_service.exceptions.ForbiddenException;
 import com.reporta.report_service.exceptions.NotFoundObjectException;
 import com.reporta.report_service.models.dto.ReportCreateDto;
 import com.reporta.report_service.models.dto.ReportResponseDto;
 import com.reporta.report_service.models.dto.ReportUpdateStatus;
 import com.reporta.report_service.models.entity.Report;
 import com.reporta.report_service.repositories.ReportRepository;
+import com.reporta.report_service.security.JwtUser;
 import com.reporta.report_service.services.ImageStorageService;
 import com.reporta.report_service.services.ReportService;
 
@@ -73,10 +75,18 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public ReportResponseDto actualizarReporte(Long id, ReportCreateDto report, MultipartFile image) {
+    public ReportResponseDto actualizarReporte(Long id, ReportCreateDto report, MultipartFile image, JwtUser user) {
 
         Report existingReport = reportRepository.findById(id)
                 .orElseThrow(() -> new NotFoundObjectException("Reporte no encontrado"));
+
+        if (!report.getIdUser()
+            .equals(Long.valueOf(user.getId()))) {
+
+            throw new ForbiddenException(
+            "No puedes modificar este reporte"
+            );
+        }    
 
         existingReport.setDescription(report.getDescription());
         existingReport.setDate(LocalDateTime.now());
@@ -98,7 +108,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public ReportResponseDto obtenerReportePorId(Long id) {
+    public ReportResponseDto obtenerReportePorId(Long id, JwtUser user) {
         Report report = reportRepository.findById(id)
                 .orElseThrow(() -> new NotFoundObjectException("Reporte no encontrado"));
         return mapToDto(report);
@@ -106,10 +116,20 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public ReportResponseDto actualizarEstadoReporte(
-            ReportUpdateStatus reportUpdateStatus) {
+            ReportUpdateStatus reportUpdateStatus, JwtUser user) {
         Report existingReport = reportRepository.findById(
                 reportUpdateStatus.getIdReport())
                 .orElseThrow(() -> new NotFoundObjectException("Reporte no encontrado"));
+        
+        boolean isAdmin =
+            user.getTipoUser()
+                    .equalsIgnoreCase("autoridad");
+
+        if (!isAdmin) {
+            throw new ForbiddenException(
+                    "No autorizado"
+            );
+        }   
 
         existingReport.setStatus(reportUpdateStatus.getStatus());
         existingReport.setObservaciones(reportUpdateStatus.getObservaciones());
@@ -129,6 +149,15 @@ public class ReportServiceImpl implements ReportService {
         List<Report> reports = reportRepository.findByIdLocationIn(idsUbicacion);
         return reports.stream().map(this::mapToDto).toList();
         
+    }
+
+    public String obtenerNombreImagenPorReporteId(Long id) {
+        Report report = reportRepository.findById(id)
+                .orElseThrow(() -> new NotFoundObjectException("Reporte no encontrado"));
+        if (report.getImageName() == null) {
+            throw new NotFoundObjectException("Este reporte no tiene imagen");
+        }
+        return report.getImageName();
     }
 
     private ReportResponseDto mapToDto(Report report) {

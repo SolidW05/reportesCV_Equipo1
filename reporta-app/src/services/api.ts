@@ -40,3 +40,24 @@ export async function apiFetch<T = unknown>(
     return text as unknown as T;
   }
 }
+
+const API_BASE2 =
+  typeof window === "undefined"
+    ? "http://localhost:4321"
+    : "";
+
+export function apiFetch2(
+  path: string,
+  options?: RequestInit
+) {
+
+  const cleanPath =
+    path.startsWith("/")
+      ? path
+      : `/${path}`;
+
+  return fetch(
+    `${API_BASE2}/api${cleanPath}`,
+    options
+  );
+}

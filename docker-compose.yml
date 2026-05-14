@@ -177,6 +177,12 @@ services:
       timeout: 30s
       retries: 5
       start_period: 30s
+  
+  frontend:
+    build: ./reporta-app/
+    container_name: astro-app
+    ports:
+      - "4321:4321"
       
 
 volumes:

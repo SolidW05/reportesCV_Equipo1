@@ -1,0 +1,157 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+import { decodeJwt, isTokenExpired, JWT_COOKIE, COOKIE_OPTIONS, roleRedirect } from '../utils/auth';
+import { loginUser } from '../services/authService';
+
+// Already authenticated? Redirect immediately
+const existingToken = Astro.cookies.get(JWT_COOKIE)?.value;
+if (existingToken) {
+  const p = decodeJwt(existingToken);
+  if (p && !isTokenExpired(p)) return Astro.redirect(roleRedirect(p.tipoUser));
+}
+
+let error: string | null = null;
+let emailValue = '';
+
+if (Astro.request.method === 'POST') {
+  const data = await Astro.request.formData();
+  emailValue = data.get('email')?.toString() ?? '';
+  const password = data.get('password')?.toString() ?? '';
+  try {
+    const { token } = await loginUser(emailValue, password);
+    const payload = decodeJwt(token);
+    
+    Astro.cookies.set(JWT_COOKIE, token, COOKIE_OPTIONS);
+    return Astro.redirect(roleRedirect(payload?.tipoUser));
+  } catch (e) {
+    error = (e as Error).message;
+  }
+}
+---
+
+<MainLayout title="Iniciar Sesión" description="Accede a tu cuenta de ReporTA">
+  <div class="container auth-page">
+    <div class="auth-card animate-fade-up">
+
+      <div class="auth-brand">
+        <span class="logo-mark">▣</span>
+        <span class="logo-text">ReporTA</span>
+      </div>
+
+      <h1 class="auth-title">Iniciar Sesión</h1>
+      <p class="auth-sub">Accede para gestionar reportes ciudadanos en tu municipio.</p>
+
+      {error && (
+        <div class="auth-alert" role="alert">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" flex-shrink="0">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          {error}
+        </div>
+      )}
+
+      <form method="POST" class="auth-form" id="loginForm" novalidate>
+        <div class="field">
+          <label for="email" class="field-label">Correo electrónico</label>
+          <input id="email" name="email" type="email" required autocomplete="email"
+                 value={emailValue} class="field-input" placeholder="tu@correo.mx" />
+        </div>
+
+        <div class="field">
+          <label for="password" class="field-label">Contraseña</label>
+          <input id="password" name="password" type="password" required
+                 autocomplete="current-password" class="field-input" placeholder="••••••••" />
+        </div>
+
+        <button type="submit" class="auth-btn" id="loginBtn">
+          <span id="btnLabel">Iniciar Sesión</span>
+          <span id="btnSpinner" class="spinner" style="display:none" aria-hidden="true"></span>
+        </button>
+      </form>
+
+      <p class="auth-footer">
+        ¿No tienes cuenta? <a href="/register">Regístrate aquí →</a>
+      </p>
+    </div>
+  </div>
+</MainLayout>
+
+<style>
+.auth-page {
+  min-height: calc(100vh - 64px - 73px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 3rem 1.5rem;
+}
+.auth-card {
+  width: 100%; max-width: 420px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 2.5rem;
+}
+.auth-brand {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem;
+}
+.auth-title {
+  font-size: 1.75rem; margin-bottom: 0.4rem;
+}
+.auth-sub { color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.75rem; line-height: 1.6; }
+
+.auth-alert {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: var(--danger-dim); color: var(--danger);
+  border: 1px solid rgba(239,68,68,0.3); border-radius: var(--radius);
+  padding: 0.7rem 1rem; font-size: 0.85rem; margin-bottom: 1.25rem;
+}
+
+.auth-form { display: flex; flex-direction: column; gap: 1.25rem; }
+.field { display: flex; flex-direction: column; gap: 0.4rem; }
+.field-label {
+  font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600;
+  color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.07em;
+}
+.field-input {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  font-family: var(--font-display); font-size: 0.9375rem;
+  padding: 0.65rem 0.875rem; width: 100%; outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.field-input:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+}
+
+.auth-btn {
+  display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  background: var(--accent); color: var(--bg);
+  font-family: var(--font-display); font-weight: 800; font-size: 1rem;
+  padding: 0.75rem; border: none; border-radius: var(--radius);
+  cursor: pointer; width: 100%; margin-top: 0.25rem;
+  transition: background var(--transition), transform var(--transition);
+}
+.auth-btn:hover { background: var(--accent-hover); transform: translateY(-2px); }
+.auth-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.spinner {
+  width: 16px; height: 16px; border: 2px solid var(--bg);
+  border-top-color: transparent; border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+.auth-footer {
+  text-align: center; margin-top: 1.5rem;
+  font-size: 0.875rem; color: var(--text-muted);
+}
+.auth-footer a { color: var(--accent); font-weight: 600; }
+</style>
+
+<script>
+const form  = document.getElementById('loginForm')  as HTMLFormElement;
+const btn   = document.getElementById('loginBtn')   as HTMLButtonElement;
+const label = document.getElementById('btnLabel')!;
+const spin  = document.getElementById('btnSpinner')!;
+
+form.addEventListener('submit', () => {
+  btn.disabled = true;
+  label.textContent = 'Entrando...';
+  spin.style.display = 'inline-block';
+});
+</script>

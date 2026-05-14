@@ -1,19 +1,33 @@
 ---
-import MainLayout from "../../layouts/MainLayout.astro";
-import ReportList from "../../components/reports/ReportList.astro";
-import type { ReportResponseDto } from "../../types/report";
+import MainLayout from '../../layouts/MainLayout.astro';
+import ReportList from '../../components/reports/ReportList.astro';
+import type { ReportResponseDto } from '../../types/report';
+import { decodeJwt, isTokenExpired, JWT_COOKIE, isUsuario, isAutoridad } from '../../utils/auth';
+import { apiFetch2 } from "../../services/api";
 
-// Get userId from query param (default 1)
-const urlParams = new URL(Astro.request.url);
-const userId = Number(urlParams.searchParams.get("userId") ?? 1);
+
+// ── Auth guard: only 'usuario' role ──
+const token = Astro.cookies.get(JWT_COOKIE)?.value;
+
+if (!token) return Astro.redirect('/login');
+const payload = decodeJwt(token);
+if (!payload || isTokenExpired(payload)) return Astro.redirect('/login');
+
+// if (!isUsuario(payload.tipoUser)) {
+//   if (isAutoridad(payload.tipoUser)) return Astro.redirect('/admin/reports');
+//   Astro.cookies.delete(JWT_COOKIE, { path: '/' });
+//   return Astro.redirect('/login?error=InvalidRole');
+// }
+
+const userId = payload.id;
 
 let reports: ReportResponseDto[] = [];
 let error: string | null = null;
 
 try {
-  const res = await fetch(
-    `http://localhost:8080/api/report/usuarios/${userId}`,
-  );
+  const res = await apiFetch2(`/report/usuarios/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   reports = await res.json();
 } catch (e) {
@@ -23,6 +37,7 @@ try {
 
 <MainLayout title="Mis Reportes">
   <div class="container section">
+
     <!-- Page Header -->
     <div class="page-header">
       <div>
@@ -31,152 +46,158 @@ try {
         <p class="page-sub">Todos tus reportes ciudadanos registrados.</p>
       </div>
       <div class="page-actions">
-        <form method="get" class="uid-form">
-          <label for="userId" class="uid-label mono">ID Usuario</label>
-          <input
-            id="userId"
-            name="userId"
-            type="number"
-            min="1"
-            value={userId}
-            class="uid-input"
-            placeholder="ID"
-          />
-          <button type="submit" class="uid-btn">Buscar</button>
-        </form>
         <a href="/reports/create" class="btn-new">+ Nuevo Reporte</a>
       </div>
     </div>
 
     <!-- Error State -->
-    {
-      error && (
-        <div class="alert-error">
-          <strong>Error al cargar reportes:</strong> {error}
-          <p
-            class="mono"
-            style="font-size:0.78rem; margin-top:0.25rem; opacity:0.7"
-          >
-            Asegúrate de que el backend esté corriendo en localhost:8083
-          </p>
-        </div>
-      )
-    }
+    {error && (
+      <div class="alert-error">
+        <strong>Error al cargar reportes:</strong> {error}
+        <p class="mono" style="font-size:0.78rem; margin-top:0.25rem; opacity:0.7">
+          Parece que hubo un problema al obtener tus reportes. Intenta recargar la página o vuelve a intentarlo más tarde.
+        </p>
+      </div>
+    )}
 
     <!-- Report List -->
-    {
-      !error && (
-        <div
-          class="rlist-meta mono"
-          style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.78rem;"
-        >
-          {reports.length} reporte{reports.length !== 1 ? "s" : ""} encontrado
-          {reports.length !== 1 ? "s" : ""}
-        </div>
-      )
-    }
-    {!error && <ReportList reports={reports} />}
+    {!error && (
+      <div class="rlist-meta mono" style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.78rem;">
+        {reports.length} reporte{reports.length !== 1 ? 's' : ''} encontrado{reports.length !== 1 ? 's' : ''}
+      </div>
+    )}
+    {!error && <ReportList reports={reports} showUserActions={true} />}
+
   </div>
+
+  <!-- Delete Confirm Modal -->
+  <dialog id="userDeleteModal" class="modal">
+    <div class="modal-inner">
+      <div class="modal-header">
+        <h3 class="modal-title">Eliminar Reporte</h3>
+        <button class="modal-close" id="closeUserDeleteModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <p id="deleteDesc" class="delete-desc"></p>
+        <div id="deleteImageWrap" class="delete-img-wrap" style="display:none">
+          <img id="deleteImg" src="" alt="Imagen del reporte" class="delete-img" />
+        </div>
+        <p class="delete-warning">Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="modal-btn modal-cancel" id="cancelUserDelete">Cancelar</button>
+        <button class="modal-btn modal-danger" id="confirmUserDelete">Eliminar</button>
+      </div>
+    </div>
+  </dialog>
+
 </MainLayout>
 
 <style>
-  .page-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1.5rem;
-    margin-bottom: 2.5rem;
-    flex-wrap: wrap;
-  }
-  .page-tag {
-    font-size: 0.72rem;
-    color: var(--accent);
-    lettter-spacing: 0.1em;
-    margin-bottom: 0.4rem;
-  }
-  .page-title {
-    font-size: clamp(1.8rem, 4vw, 3rem);
-    margin-bottom: 0.25rem;
-  }
-  .page-sub {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-  }
+.modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); color: var(--text);
+  padding: 0; max-width: min(480px, 92vw); box-shadow: var(--shadow); outline: none;
+}
+.modal::backdrop { background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
+.modal-inner { padding: 1.5rem; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.modal-title { font-size: 1.1rem; }
+.modal-close {
+  background: none; border: none; color: var(--text-muted); cursor: pointer;
+  font-size: 1rem; padding: 0.2rem 0.4rem; border-radius: 4px; transition: all var(--transition);
+}
+.modal-close:hover { background: var(--surface-2); color: var(--text); }
+.modal-body { color: var(--text-dim); line-height: 1.6; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+.delete-desc { font-weight: 600; color: var(--text); font-size: 0.9rem; }
+.delete-img-wrap { border-radius: var(--radius); overflow: hidden; max-height: 200px; }
+.delete-img { width: 100%; height: 200px; object-fit: cover; display: block; }
+.delete-warning { font-size: 0.82rem; color: var(--danger); }
+.modal-footer { display: flex; gap: 0.75rem; justify-content: flex-end; }
+.modal-btn {
+  font-family: var(--font-display); font-weight: 700; font-size: 0.875rem;
+  padding: 0.55rem 1.1rem; border-radius: var(--radius); cursor: pointer; border: none;
+  transition: all var(--transition);
+}
+.modal-cancel { background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); }
+.modal-danger { background: var(--danger); color: #fff; }
+.modal-danger:hover { opacity: 0.9; }
+</style>
 
-  .page-actions {
-    display: flex;
-    align-items: flex-end;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-  }
-  .uid-form {
-    display: flex;
-    align-items: flex-end;
-    gap: 0.4rem;
-  }
-  .uid-label {
-    font-size: 0.7rem;
-    color: var(--text-muted);
-    display: block;
-    margin-bottom: 0.3rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-  .uid-input {
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: var(--radius);
-    padding: 0.55rem 0.75rem;
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
-    width: 90px;
-    outline: none;
-    transition: border-color var(--transition);
-  }
-  .uid-input:focus {
-    border-color: var(--accent);
-  }
-  .uid-btn {
-    background: var(--surface-2);
-    color: var(--text-dim);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 0.55rem 0.9rem;
-    font-family: var(--font-display);
-    font-weight: 600;
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all var(--transition);
-  }
-  .uid-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
+<script>
+const userDeleteModal = document.getElementById('userDeleteModal') as HTMLDialogElement;
+const deleteDescEl    = document.getElementById('deleteDesc')!;
+const deleteImgWrap   = document.getElementById('deleteImageWrap')!;
+const deleteImgEl     = document.getElementById('deleteImg') as HTMLImageElement;
+const confirmUserBtn  = document.getElementById('confirmUserDelete')!;
+const cancelUserBtn   = document.getElementById('cancelUserDelete')!;
+const closeUserBtn    = document.getElementById('closeUserDeleteModal')!;
+let pendingDeleteId: string | null = null;
 
-  .btn-new {
-    background: var(--accent);
-    color: var(--bg);
-    font-weight: 800;
-    font-size: 0.85rem;
-    padding: 0.6rem 1.1rem;
-    border-radius: var(--radius);
-    text-decoration: none;
-    transition: all var(--transition);
-    white-space: nowrap;
+window.addEventListener('report:delete-request', (e: Event) => {
+  const { id, desc, image } = (e as CustomEvent).detail;
+  pendingDeleteId = id;
+  deleteDescEl.textContent = desc || `Reporte #${id}`;
+  if (image) {
+    deleteImgEl.src = `/api/report/images/${id}`;
+    deleteImgWrap.style.display = 'block';
+  } else {
+    deleteImgWrap.style.display = 'none';
   }
-  .btn-new:hover {
-    background: var(--accent-hover);
-    color: var(--bg);
-    transform: translateY(-1px);
-  }
+  userDeleteModal.showModal();
+});
 
-  .alert-error {
-    background: var(--danger-dim);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    border-radius: var(--radius-lg);
-    padding: 1rem 1.25rem;
-    color: var(--danger);
-    margin-bottom: 2rem;
+[cancelUserBtn, closeUserBtn].forEach(b => b.addEventListener('click', () => {
+  userDeleteModal.close(); pendingDeleteId = null;
+}));
+userDeleteModal.addEventListener('click', (e) => {
+  if (e.target === userDeleteModal) userDeleteModal.close();
+});
+
+confirmUserBtn.addEventListener('click', async () => {
+  if (!pendingDeleteId) return;
+  confirmUserBtn.textContent = 'Eliminando...';
+  (confirmUserBtn as HTMLButtonElement).disabled = true;
+  try {
+    const token = document.cookie.match(/(?:^|;\s*)jwt=([^;]+)/)?.[1] ?? null;
+    const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+    const res = await fetch(`/api/report/${pendingDeleteId}`, { method: 'DELETE', headers });
+    if (!res.ok) throw new Error(`Error ${res.status}`);
+    userDeleteModal.close();
+    const card = document.querySelector(`[data-id="${pendingDeleteId}"]`)?.closest('article');
+    card?.remove();
+    pendingDeleteId = null;
+    if ((window as any).showToast) (window as any).showToast('Reporte eliminado', 'success');
+  } catch (err) {
+    if ((window as any).showToast) (window as any).showToast(`Error al eliminar: ${(err as Error).message}`, 'error');
+  } finally {
+    confirmUserBtn.textContent = 'Eliminar';
+    (confirmUserBtn as HTMLButtonElement).disabled = false;
   }
+});
+</script>
+
+<style>
+.page-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 1.5rem; margin-bottom: 2.5rem; flex-wrap: wrap;
+}
+.page-tag { font-size: 0.72rem; color: var(--accent); margin-bottom: 0.4rem; }
+.page-title { font-size: clamp(1.8rem, 4vw, 3rem); margin-bottom: 0.25rem; }
+.page-sub { color: var(--text-muted); font-size: 0.9rem; }
+
+.page-actions { display: flex; align-items: flex-end; gap: 0.75rem; }
+.btn-new {
+  background: var(--accent); color: var(--bg);
+  font-weight: 800; font-size: 0.85rem; padding: 0.6rem 1.1rem;
+  border-radius: var(--radius); text-decoration: none;
+  transition: all var(--transition); white-space: nowrap;
+}
+.btn-new:hover { background: var(--accent-hover); color: var(--bg); transform: translateY(-1px); }
+
+.alert-error {
+  background: var(--danger-dim); border: 1px solid rgba(239,68,68,0.3);
+  border-radius: var(--radius-lg); padding: 1rem 1.25rem;
+  color: var(--danger); margin-bottom: 2rem;
+}
 </style>

@@ -1,0 +1,7 @@
+---
+import { JWT_COOKIE } from '../utils/auth';
+
+// Clear the JWT cookie and redirect to login
+Astro.cookies.delete(JWT_COOKIE, { path: '/' });
+return Astro.redirect('/login');
+---
